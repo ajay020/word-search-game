@@ -187,24 +187,6 @@ fun WordGrid(
                                 // Continuously calculate the cell being dragged over and add to draggedCells
                                 val offset = change.position
 
-                                // Define the half of the stroke width to adjust for rounded cap
-                                val halfStrokeWidth = 70f / 2 // Assuming strokeWidth of 16f
-
-                                // Ensure the offset remains within the grid's bounds
-                                val boundedOffset =
-                                    offset.copy(
-                                        x =
-                                            offset.x.coerceIn(
-                                                0f,
-                                                gridLayoutSize.width.toFloat() - halfStrokeWidth,
-                                            ),
-                                        y =
-                                            offset.y.coerceIn(
-                                                0f,
-                                                gridLayoutSize.height.toFloat() - halfStrokeWidth,
-                                            ),
-                                    )
-
                                 val (row, col) =
                                     offsetToGridCoordinate(
                                         offset,
@@ -212,7 +194,7 @@ fun WordGrid(
                                         grid.size,
                                     )
                                 val newCell = row to col
-                                endLineOffset = boundedOffset
+                                endLineOffset = getCellCenter(row, col, cellSize.toPx())
 
                                 selectedCells = calculateSelectedCells(startCell!!, newCell, grid.size)
 //                                Log.d("WordGrid", "Drag: offset=$offset, cell=($row, $col)")

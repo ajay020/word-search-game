@@ -10,12 +10,12 @@ class WordSearchViewModel : ViewModel() {
     val gridState: StateFlow<List<List<Char>>> = _gridState
 
     private val _wordListState =
-        MutableStateFlow(listOf("cat", "mat", "bat")) // Example words
+        MutableStateFlow(listOf("cat", "mat", "bat", "rat", "sat")) // Example words
     val wordListState: StateFlow<List<String>> = _wordListState
 
     private fun generateGrid(): List<List<Char>> {
         // Your logic to generate a grid with random letters and place words
-        val wordList = listOf("cat", "mat", "bat")
+        val wordList = listOf("cat", "mat", "bat", "rat", "sat")
         return GridUtils.generateGrid(wordList)
     }
 }
