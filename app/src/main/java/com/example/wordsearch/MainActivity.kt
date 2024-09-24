@@ -10,12 +10,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import com.example.wordsearch.ui.screens.WordSearchScreen
 import com.example.wordsearch.ui.theme.WordSearchTheme
-import com.example.wordsearch.ui.viewModels.WordSearchViewModel
 
 class MainActivity : ComponentActivity() {
-    // Initialize your ViewModel here
-    private val viewModel = WordSearchViewModel()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -23,7 +19,6 @@ class MainActivity : ComponentActivity() {
             WordSearchTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     WordSearchScreen(
-                        viewModel = viewModel,
                         modifier =
                             Modifier
                                 .padding(innerPadding)

@@ -2,7 +2,6 @@ package com.example.wordsearch.utils
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.lerp
-import androidx.compose.ui.unit.IntSize
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.random.Random
@@ -137,13 +136,11 @@ object GridUtils {
 
     fun offsetToGridCoordinate(
         offset: Offset,
-        size: IntSize,
+        cellSizePx: Float,
         gridSize: Int,
     ): Pair<Int, Int> {
-        val cellSize = minOf(size.width, size.height) / gridSize.toFloat()
-
-        val col = (offset.x / cellSize).toInt().coerceIn(0, gridSize - 1)
-        val row = (offset.y / cellSize).toInt().coerceIn(0, gridSize - 1)
+        val col = (offset.x / cellSizePx).toInt().coerceIn(0, gridSize - 1)
+        val row = (offset.y / cellSizePx).toInt().coerceIn(0, gridSize - 1)
 
         return row to col
     }
@@ -227,7 +224,6 @@ object GridUtils {
     ): Offset {
         val x = col * cellSize + (cellSize / 2)
         val y = row * cellSize + (cellSize / 2)
-//        Log.d("WordGrid", "getCellCenter: $x $y")
         return Offset(x, y)
     }
 
@@ -249,15 +245,4 @@ object GridUtils {
                     )
             )
     }
-
-//    // Test the grid generation
-//    fun main() {
-//        val wordList = listOf("KOTLIN", "COMPOSE", "ANDROID", "VIEW", "GRID")
-//        val grid = generateGrid(wordList)
-//
-//        // Print the generated grid
-//        grid.forEach { row ->
-//            println(row.joinToString(" "))
-//        }
-//    }
 }
