@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -38,20 +40,32 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wordsearch.data.GridContainerData
 import com.example.wordsearch.data.Line
-import com.example.wordsearch.ui.viewModels.WordSearchViewModel
+import com.example.wordsearch.data.Puzzle
+import com.example.wordsearch.ui.viewModels.WordGridViewModel
 
 const val TAG = "WordGrid"
 
 @Composable
-fun WordGrid(viewModel: WordSearchViewModel = viewModel()) {
+fun WordGrid(
+    puzzle: Puzzle,
+    viewModel: WordGridViewModel = viewModel(),
+) {
     val words by viewModel.wordListState.collectAsState()
     val foundWords by viewModel.foundWords.collectAsState()
     val currentWord by viewModel.currentWord.collectAsState()
+    val grid by viewModel.gridState.collectAsState()
+    val selectedCells by viewModel.selectedCells.collectAsState()
+    val selectedLines by viewModel.selectedLines.collectAsState()
+    val currentLine by viewModel.currentLine.collectAsState()
+
+    LaunchedEffect(puzzle.words) {
+        viewModel.initGrid(puzzle.words)
+    }
 
     // cell size
     val cellSize = 50.dp
-    Log.d(TAG, "WordGrid render:")
 
     Column(
         modifier =
@@ -60,43 +74,52 @@ fun WordGrid(viewModel: WordSearchViewModel = viewModel()) {
                 .background(Color.LightGray),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        WordList(words = words, foundWords = foundWords)
+        WordList(
+            modifier = Modifier.width(cellSize * grid.size),
+            words = words,
+            foundWords = foundWords,
+        )
         Spacer(modifier = Modifier.height(8.dp))
         CurrentWord(currentWord = currentWord)
         Spacer(modifier = Modifier.height(8.dp))
 
-        GridContainer(
-            cellSize = cellSize,
-            viewModel = viewModel,
-        )
+        if (grid.isNotEmpty()) {
+            GridContainer(
+                gridData =
+                    GridContainerData(
+                        cellSize = cellSize,
+                        grid = grid,
+                        selectedLines = selectedLines,
+                        currentLine = currentLine,
+                        selectedCells = selectedCells,
+                    ),
+                viewModel = viewModel,
+            )
+        }
     }
 }
 
 @Composable
 fun GridContainer(
-    cellSize: Dp,
-    viewModel: WordSearchViewModel,
+    gridData: GridContainerData,
+    viewModel: WordGridViewModel,
 ) {
-    val cellSizePx = with(LocalDensity.current) { cellSize.toPx() }
-    val grid by viewModel.gridState.collectAsState()
-    val selectedCells by viewModel.selectedCells.collectAsState()
-    val selectedLines by viewModel.selectedLines.collectAsState()
-    val currentLineColor by viewModel.currentLineColor.collectAsState()
-    val currentLine by viewModel.currentLine.collectAsState()
-
-    Log.d(TAG, "GridContainer render currentLineColor: $currentLineColor")
+    val cellSizePx = with(LocalDensity.current) { gridData.cellSize.toPx() }
 
     Box(
         modifier =
             Modifier
-                .size(cellSize * grid[0].size, cellSize * grid.size)
+                .size(gridData.cellSize * gridData.grid[0].size, gridData.cellSize * gridData.grid.size)
                 .background(Color.White, shape = RoundedCornerShape(8.dp))
-                .DrawLines(selectedLines, currentLine)
+                .DrawLines(gridData.selectedLines, gridData.currentLine)
                 .HandleGestures(viewModel, cellSizePx),
         contentAlignment = Alignment.Center,
     ) {
-//        DrawLines(selectedLines = selectedLines, currentLineColor = currentLineColor)
-        GridDisplay(grid = grid, cellSize = cellSize, selectedCells = selectedCells)
+        GridDisplay(
+            grid = gridData.grid,
+            cellSize = gridData.cellSize,
+            selectedCells = gridData.selectedCells,
+        )
     }
 }
 
@@ -145,17 +168,15 @@ fun Modifier.DrawLines(
     selectedLines: List<Line>,
     currentLine: Line?,
 ): Modifier =
-    this.then(
-        drawBehind {
-            selectedLines.forEach { line ->
-                drawLinePath(line.offsets, line.color)
-            }
+    drawBehind {
+        selectedLines.forEach { line ->
+            drawLinePath(line.offsets, line.color)
+        }
 //         Drawing the currently dragged line (if needed)
-            currentLine?.let {
-                drawLinePath(currentLine.offsets, currentLine.color)
-            }
-        },
-    )
+        currentLine?.let {
+            drawLinePath(currentLine.offsets, currentLine.color)
+        }
+    }
 
 fun DrawScope.drawLinePath(
     points: List<Offset>,
@@ -177,18 +198,16 @@ fun DrawScope.drawLinePath(
 
 @Suppress("ktlint:standard:function-naming")
 fun Modifier.HandleGestures(
-    viewModel: WordSearchViewModel,
+    viewModel: WordGridViewModel,
     cellSizePx: Float,
 ): Modifier =
-    this.then(
-        pointerInput(Unit) {
-            detectDragGestures(
-                onDragStart = { offset -> viewModel.onDragStart(offset, cellSizePx) },
-                onDragEnd = { viewModel.onDragEnd(cellSizePx) },
-                onDrag = { change, _ -> viewModel.onDrag(change.position, cellSizePx) },
-            )
-        },
-    )
+    pointerInput(Unit) {
+        detectDragGestures(
+            onDragStart = { offset -> viewModel.onDragStart(offset, cellSizePx) },
+            onDragEnd = { viewModel.onDragEnd(cellSizePx) },
+            onDrag = { change, _ -> viewModel.onDrag(change.position, cellSizePx) },
+        )
+    }
 
 @Composable
 fun CurrentWord(
@@ -275,9 +294,10 @@ private fun WordGridPreview() {
             "GRAPE",
         )
 
-    val viewModel = WordSearchViewModel()
+    val viewModel = WordGridViewModel()
 
     WordGrid(
         viewModel = viewModel,
+        puzzle = Puzzle(1, words),
     )
 }

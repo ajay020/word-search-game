@@ -17,21 +17,14 @@ import kotlinx.coroutines.flow.StateFlow
 
 const val TAG = "WordViewModel"
 
-class WordSearchViewModel : ViewModel() {
-    // Available colors for lines
+class WordGridViewModel : ViewModel() {
     private val availableColors = colors
     private val interpolationSteps = 10
-    private val wordList = listOf("CAT", "DOG", "BIRD", "COW", "PIG", "FISH")
 
-    // Lazily initialized grid to avoid multiple calls to generateGrid
-    private val initialGrid: List<MutableList<Char>> by lazy {
-        generateGrid(wordList)
-    }
-
-    private val _gridState = MutableStateFlow(initialGrid)
+    private val _gridState = MutableStateFlow<List<List<Char>>>(emptyList())
     val gridState: StateFlow<List<List<Char>>> = _gridState
 
-    private val _wordListState = MutableStateFlow(wordList)
+    private val _wordListState = MutableStateFlow<List<String>>(emptyList())
     val wordListState: StateFlow<List<String>> = _wordListState
 
     private val _selectedCells = MutableStateFlow(setOf<Pair<Int, Int>>())
@@ -54,6 +47,11 @@ class WordSearchViewModel : ViewModel() {
 
     private var startCell: Pair<Int, Int>? = null
     var currentColorIndex = 0
+
+    fun initGrid(words: List<String>) {
+        _gridState.value = generateGrid(words)
+        _wordListState.value = words
+    }
 
     fun onDragStart(
         offset: Offset,

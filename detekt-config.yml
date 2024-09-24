@@ -1,7 +1,6 @@
-config:
-  naming:
-    FunctionNaming:
-      active: true
-      functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
-      excludeClassPattern: '$^'
-      ignoreAnnotated: ['Composable']
+naming:
+  FunctionNaming:
+    active: true
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+    excludeClassPattern: '$^'
+    ignoreAnnotated: ['Composable']

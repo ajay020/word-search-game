@@ -6,32 +6,37 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import com.example.wordsearch.data.Puzzle
 import com.example.wordsearch.ui.components.WordGrid
-import com.example.wordsearch.ui.viewModels.WordSearchViewModel
+import com.example.wordsearch.utils.FileUtils.loadPuzzlesFromJson
 
 const val TAG = "WordSearchScreen"
 
-@Suppress("ktlint:standard:function-naming")
 @Composable
-fun WordSearchScreen(
-    modifier: Modifier,
-) {
-    ScreenContent(
-        modifier = modifier,
-    )
-}
-
-@Suppress("ktlint:standard:function-naming")
-@Composable
-fun ScreenContent(
+fun GameScreen(
     modifier: Modifier = Modifier,
+    level: Int,
+    puzzleId: Int,
 ) {
+    val fileName = "level_$level.json"
+    val context = LocalContext.current
+
+    var puzzle by remember { mutableStateOf<Puzzle?>(null) }
+
+    LaunchedEffect(fileName) {
+        puzzle =
+            loadPuzzlesFromJson(context, fileName).first { it.id == puzzleId }
+        println("puzzles: $puzzle")
+    }
+
     Column(
         modifier =
             modifier
@@ -39,7 +44,8 @@ fun ScreenContent(
                 .background(Color.DarkGray),
         verticalArrangement = Arrangement.Center,
     ) {
-        WordGrid()
+        puzzle?.let {
+            WordGrid( puzzle = puzzle!!)
+        }
     }
 }
-

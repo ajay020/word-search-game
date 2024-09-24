@@ -4,11 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
-import com.example.wordsearch.ui.screens.WordSearchScreen
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.wordsearch.ui.screens.GameScreen
+import com.example.wordsearch.ui.screens.HomeScreen
+import com.example.wordsearch.ui.screens.PuzzleScreen
 import com.example.wordsearch.ui.theme.WordSearchTheme
 
 class MainActivity : ComponentActivity() {
@@ -17,16 +19,37 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WordSearchTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    WordSearchScreen(
-                        modifier =
-                            Modifier
-                                .padding(innerPadding)
-                                .fillMaxSize(),
-                    )
-//
-                }
+                MainApp()
             }
+        }
+    }
+}
+
+// Entry point for your app
+@Composable
+fun MainApp() {
+    val navController = rememberNavController()
+
+    // NavHost that holds all screens
+    NavHost(navController = navController, startDestination = "home") {
+        composable("home") {
+            HomeScreen(navController = navController)
+        }
+        composable("puzzle/{level}") { backStackEntry ->
+            val puzzleLevel = backStackEntry.arguments?.getString("level")?.toIntOrNull() ?: 1
+            PuzzleScreen(
+                level = puzzleLevel,
+                navigateToGameScreen = { level: Int, id: Int ->
+                    navController.navigate("game/$level/$id")
+                },
+            )
+        }
+        composable("game/{level}/{id}") { backStackEntry ->
+            // Navigate to GameScreen
+            // Pass the level and id from the arguments
+            val level = backStackEntry.arguments?.getString("level")?.toIntOrNull() ?: 1
+            val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 1
+            GameScreen(level = level, puzzleId = id)
         }
     }
 }
