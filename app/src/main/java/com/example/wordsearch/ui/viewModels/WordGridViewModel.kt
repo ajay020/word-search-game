@@ -39,14 +39,14 @@ class WordGridViewModel : ViewModel() {
     private val _currentWord = MutableStateFlow("")
     val currentWord: StateFlow<String> = _currentWord
 
-    private val _currentLineColor = MutableStateFlow(colors.first())
-    val currentLineColor: StateFlow<Color> = _currentLineColor
-
     private val _currentLine = MutableStateFlow<Line?>(null)
     val currentLine: StateFlow<Line?> = _currentLine
 
+    private val _isGameCompleted = MutableStateFlow(false)
+    val isGameCompleted: StateFlow<Boolean> = _isGameCompleted
+
     private var startCell: Pair<Int, Int>? = null
-    var currentColorIndex = 0
+    private var currentColorIndex = 0
 
     fun initGrid(words: List<String>) {
         _gridState.value = generateGrid(words)
@@ -62,14 +62,13 @@ class WordGridViewModel : ViewModel() {
         Log.d(TAG, "DragStart:  $startCell")
 
         _selectedCells.value = setOf(row to col)
-        _currentLineColor.value = getNextColor()
 
         val line = Line(offsets = listOf(getCellCenter(row, col, cellSize)), color = getNextColor())
         _currentLine.value = line
     }
 
-    fun onDragEnd(cellSize: Float) {
-        startCell?.let { start ->
+    fun onDragEnd() {
+        startCell?.let {
             val selectedWord =
                 _selectedCells.value.map { (r, c) -> _gridState.value[r][c] }.joinToString("")
 
@@ -78,7 +77,8 @@ class WordGridViewModel : ViewModel() {
                     selectedWord,
                 )
             ) {
-                _foundWords.value += selectedWord
+                // Add the word to the found words set
+                onWordFound(selectedWord)
 
                 if (_currentLine.value != null) {
                     _selectedLines.value += _currentLine.value!!
@@ -123,6 +123,27 @@ class WordGridViewModel : ViewModel() {
                         ),
                 )
         }
+    }
+
+    // Check if all words are found and mark the game as completed
+    private fun checkGameCompletion() {
+        if (_foundWords.value.size == _wordListState.value.size) {
+            _isGameCompleted.value = true
+        }
+    }
+
+    fun resetGameState() {
+        _isGameCompleted.value = false
+        _foundWords.value = emptySet() // Reset found words for next game
+        _selectedCells.value = emptySet()
+        _selectedLines.value = emptyList()
+        _currentWord.value = ""
+        _currentLine.value = null
+    }
+
+    private fun onWordFound(word: String) {
+        _foundWords.value += word
+        checkGameCompletion()
     }
 
     private fun resetDragState() {

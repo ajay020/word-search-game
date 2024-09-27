@@ -1,10 +1,14 @@
 [
   {
     "id": 1,
-    "words": ["CAT", "DOG", "BIRD"]
+    "words": ["CAT", "DOG", "BIRD", "AIRPLANE"]
   },
   {
     "id": 2,
-    "words": ["APPLE", "ORANGE", "BANANA"]
+    "words": ["STAR", "SUN", "MOON"]
+  },
+  {
+    "id": 3,
+    "words": ["CAT", "PAT", "MAT", "SAT", "BAT", "PAD"]
   }
 ]

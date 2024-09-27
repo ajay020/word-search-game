@@ -14,12 +14,17 @@ enum class Direction {
 }
 
 object GridUtils {
-    private const val GRID_SIZE = 6
+    // Minimum grid size
+    private const val MIN_GRID_SIZE = 6
 
     // Generate a random grid with words placed
     fun generateGrid(wordList: List<String>): List<MutableList<Char>> {
+        // Determine the grid size based on the longest word
+        val longestWordLength = wordList.maxOf { it.length }
+        val gridSize = maxOf(longestWordLength, MIN_GRID_SIZE)
+
         // Initialize the grid with empty characters
-        val grid = MutableList(GRID_SIZE) { MutableList(GRID_SIZE) { ' ' } }
+        val grid = MutableList(gridSize + 1) { MutableList(gridSize) { ' ' } }
 
         // Place each word in the grid
         wordList.forEach { word ->
@@ -33,6 +38,7 @@ object GridUtils {
     }
 
     // Function to place a word in the grid
+    // Function to place a word in the grid
     private fun placeWordInGrid(
         grid: MutableList<MutableList<Char>>,
         word: String,
@@ -40,9 +46,9 @@ object GridUtils {
         var placed = false
         while (!placed) {
             // Randomly pick a starting point and direction
-            val startRow = Random.nextInt(GRID_SIZE)
-            val startCol = Random.nextInt(GRID_SIZE)
-            val direction = Direction.entries[Random.nextInt(Direction.entries.size)]
+            val startRow = Random.nextInt(grid.size)
+            val startCol = Random.nextInt(grid[0].size)
+            val direction = Direction.entries.random()
 
             // Try to place the word in the chosen direction
             if (canPlaceWord(grid, word, startRow, startCol, direction)) {
@@ -52,6 +58,7 @@ object GridUtils {
         }
     }
 
+    // Check if the word can be placed at the given position and direction
     // Check if the word can be placed at the given position and direction
     private fun canPlaceWord(
         grid: List<List<Char>>,
@@ -63,7 +70,7 @@ object GridUtils {
         val length = word.length
         return when (direction) {
             Direction.HORIZONTAL -> {
-                if (startCol + length > GRID_SIZE) return false
+                if (startCol + length > grid[0].size) return false
                 for (i in 0 until length) {
                     if (grid[startRow][startCol + i] != ' ' && grid[startRow][startCol + i] != word[i]) {
                         return false
@@ -73,7 +80,7 @@ object GridUtils {
             }
 
             Direction.VERTICAL -> {
-                if (startRow + length > GRID_SIZE) return false
+                if (startRow + length > grid.size) return false
                 for (i in 0 until length) {
                     if (grid[startRow + i][startCol] != ' ' && grid[startRow + i][startCol] != word[i]) {
                         return false
@@ -83,7 +90,7 @@ object GridUtils {
             }
 
             Direction.DIAGONAL -> {
-                if (startRow + length > GRID_SIZE || startCol + length > GRID_SIZE) return false
+                if (startRow + length > grid.size || startCol + length > grid[0].size) return false
                 for (i in 0 until length) {
                     if (grid[startRow + i][startCol + i] != ' ' && grid[startRow + i][startCol + i] != word[i]) {
                         return false
@@ -124,11 +131,13 @@ object GridUtils {
     }
 
     // Fill remaining empty spaces in the grid with random letters
+    // Function to fill empty spaces with random letters
     private fun fillEmptySpaces(grid: MutableList<MutableList<Char>>) {
-        for (row in grid.indices) {
-            for (col in grid[row].indices) {
-                if (grid[row][col] == ' ') {
-                    grid[row][col] = ('A'..'Z').random() // Fill with a random letter
+        val alphabet = ('A'..'Z').toList()
+        for (row in grid) {
+            for (i in row.indices) {
+                if (row[i] == ' ') {
+                    row[i] = alphabet.random()
                 }
             }
         }

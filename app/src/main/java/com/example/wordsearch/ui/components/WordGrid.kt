@@ -32,11 +32,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -64,19 +67,59 @@ fun WordGrid(
         viewModel.initGrid(puzzle.words)
     }
 
-    // cell size
-    val cellSize = 50.dp
+    // Check if the grid is empty
+    if (grid.isEmpty() || grid[0].isEmpty()) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Grid is loading...",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                fontSize = 20.sp
+            )
+        }
+        return
+    }
+
+    // Use LocalConfiguration to get screen dimensions
+    val configuration = LocalConfiguration.current
+    val screenWidthDp = configuration.screenWidthDp.dp - 20.dp
+
+    val numColumns = grid[0].size
+
+    // Define breakpoints and adjust cell size and text size based on screen width
+    val cellSize =
+        when {
+            screenWidthDp < 360.dp -> screenWidthDp / numColumns // xSmall screen size
+            screenWidthDp < 400.dp -> screenWidthDp / numColumns // Small screen size
+            screenWidthDp < 600.dp -> screenWidthDp / numColumns // Medium screen size
+            else -> 60.dp // Large screen size
+        }
+
+    val textSize =
+        when {
+            numColumns <= 6 -> 20.sp // Small screen text size
+            numColumns <= 8 -> 18.sp // Medium screen text size
+            numColumns <= 10 -> 16.sp // Medium screen text size
+            else -> 22.sp // Large screen text size
+        }
+
+    Log.d(TAG, "cellSize: $cellSize textSize: $textSize screenWidth: $screenWidthDp")
 
     Column(
         modifier =
             Modifier
-                .fillMaxWidth()
                 .background(Color.LightGray),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         WordList(
             modifier = Modifier.width(cellSize * grid.size),
             words = words,
+            textSize = textSize,
             foundWords = foundWords,
         )
         Spacer(modifier = Modifier.height(8.dp))
@@ -85,6 +128,7 @@ fun WordGrid(
 
         if (grid.isNotEmpty()) {
             GridContainer(
+                textSize = textSize,
                 gridData =
                     GridContainerData(
                         cellSize = cellSize,
@@ -103,6 +147,7 @@ fun WordGrid(
 fun GridContainer(
     gridData: GridContainerData,
     viewModel: WordGridViewModel,
+    textSize: TextUnit,
 ) {
     val cellSizePx = with(LocalDensity.current) { gridData.cellSize.toPx() }
 
@@ -111,13 +156,14 @@ fun GridContainer(
             Modifier
                 .size(gridData.cellSize * gridData.grid[0].size, gridData.cellSize * gridData.grid.size)
                 .background(Color.White, shape = RoundedCornerShape(8.dp))
-                .DrawLines(gridData.selectedLines, gridData.currentLine)
-                .HandleGestures(viewModel, cellSizePx),
+                .drawLines(gridData.selectedLines, gridData.currentLine)
+                .handleGestures(viewModel, cellSizePx),
         contentAlignment = Alignment.Center,
     ) {
         GridDisplay(
             grid = gridData.grid,
             cellSize = gridData.cellSize,
+            textSize = textSize,
             selectedCells = gridData.selectedCells,
         )
     }
@@ -126,6 +172,7 @@ fun GridContainer(
 @Composable
 fun GridDisplay(
     grid: List<List<Char>>,
+    textSize: TextUnit,
     cellSize: Dp,
     selectedCells: Set<Pair<Int, Int>>,
 ) {
@@ -152,7 +199,7 @@ fun GridDisplay(
                             color = if (isSelected) Color.White else Color.Black,
                             style =
                                 TextStyle(
-                                    fontSize = 22.sp,
+                                    fontSize = textSize,
                                     fontWeight = FontWeight.Medium,
                                 ),
                         )
@@ -164,7 +211,7 @@ fun GridDisplay(
 }
 
 @Composable
-fun Modifier.DrawLines(
+fun Modifier.drawLines(
     selectedLines: List<Line>,
     currentLine: Line?,
 ): Modifier =
@@ -196,15 +243,14 @@ fun DrawScope.drawLinePath(
     )
 }
 
-@Suppress("ktlint:standard:function-naming")
-fun Modifier.HandleGestures(
+fun Modifier.handleGestures(
     viewModel: WordGridViewModel,
     cellSizePx: Float,
 ): Modifier =
     pointerInput(Unit) {
         detectDragGestures(
             onDragStart = { offset -> viewModel.onDragStart(offset, cellSizePx) },
-            onDragEnd = { viewModel.onDragEnd(cellSizePx) },
+            onDragEnd = { viewModel.onDragEnd() },
             onDrag = { change, _ -> viewModel.onDrag(change.position, cellSizePx) },
         )
     }
@@ -244,6 +290,7 @@ fun WordList(
     modifier: Modifier = Modifier,
     words: List<String>,
     foundWords: Set<String>,
+    textSize: TextUnit,
 ) {
     FlowRow(
         modifier =
@@ -260,7 +307,7 @@ fun WordList(
                 style =
                     TextStyle(
                         color = if (isFound) Color.Green else Color.Black,
-                        fontSize = 20.sp,
+                        fontSize = textSize,
                         fontWeight = FontWeight.Medium,
                     ),
             )
@@ -273,25 +320,13 @@ fun WordList(
 private fun WordGridPreview() {
     val grid =
         listOf(
-            listOf('A', 'B', 'C', 'D', 'E', 'F', 'G'),
-            listOf('A', 'B', 'C', 'D', 'E', 'F', 'G'),
-            listOf('A', 'B', 'C', 'D', 'E', 'F', 'G'),
-            listOf('A', 'B', 'C', 'D', 'E', 'F', 'G'),
-            listOf('A', 'B', 'C', 'D', 'E', 'F', 'G'),
-            listOf('A', 'B', 'C', 'D', 'E', 'F', 'G'),
-            listOf('A', 'B', 'C', 'D', 'E', 'F', 'G'),
+            listOf('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'),
         )
     val words =
         listOf(
             "APPLE",
-            "BANANA",
-            "CHERRY",
-            "DATE",
-            "EGG",
-            "FRUIT",
-            "GRAPE",
-            "FRUIT",
-            "GRAPE",
+            "CAT",
+            "AEROPLANE",
         )
 
     val viewModel = WordGridViewModel()

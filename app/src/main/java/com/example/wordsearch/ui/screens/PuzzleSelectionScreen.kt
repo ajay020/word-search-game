@@ -38,7 +38,7 @@ import com.example.wordsearch.utils.FileUtils.loadPuzzlesFromJson
 // PuzzleScreen to display puzzles for the selected level
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PuzzleScreen(
+fun PuzzleSelectionScreen(
     level: Int,
     navigateToGameScreen: (Int, Int) -> Unit,
 ) {
@@ -54,17 +54,16 @@ fun PuzzleScreen(
                     .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            PuzzleSelectionScreen(level = level, navigateToGameScreen)
+            MainContent(level = level, navigateToGameScreen)
         }
     }
 }
 
 @Composable
-fun PuzzleSelectionScreen(
+fun MainContent(
     level: Int,
     navigateToGameScreen: (Int, Int) -> Unit,
 ) {
-    // Assuming you have a function to get the correct file name based on level
     val fileName = "level_$level.json"
     val context = LocalContext.current
 
