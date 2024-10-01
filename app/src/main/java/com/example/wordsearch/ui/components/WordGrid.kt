@@ -2,6 +2,7 @@ package com.example.wordsearch.ui.components
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,14 +46,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wordsearch.data.GridContainerData
 import com.example.wordsearch.data.Line
-import com.example.wordsearch.data.Puzzle
 import com.example.wordsearch.ui.viewModels.WordGridViewModel
 
 const val TAG = "WordGrid"
 
 @Composable
 fun WordGrid(
-    puzzle: Puzzle,
+    wordList: List<String>,
     viewModel: WordGridViewModel = viewModel(),
 ) {
     val words by viewModel.wordListState.collectAsState()
@@ -63,8 +63,8 @@ fun WordGrid(
     val selectedLines by viewModel.selectedLines.collectAsState()
     val currentLine by viewModel.currentLine.collectAsState()
 
-    LaunchedEffect(puzzle.words) {
-        viewModel.initGrid(puzzle.words)
+    LaunchedEffect(wordList) {
+        viewModel.initGrid(wordList)
     }
 
     // Check if the grid is empty
@@ -73,13 +73,13 @@ fun WordGrid(
             modifier =
                 Modifier
                     .fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Text(
                 text = "Grid is loading...",
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
-                fontSize = 20.sp
+                fontSize = 20.sp,
             )
         }
         return
@@ -91,12 +91,12 @@ fun WordGrid(
 
     val numColumns = grid[0].size
 
+    Log.d(TAG, " cell size:  ${screenWidthDp / numColumns}")
+
     // Define breakpoints and adjust cell size and text size based on screen width
     val cellSize =
         when {
-            screenWidthDp < 360.dp -> screenWidthDp / numColumns // xSmall screen size
-            screenWidthDp < 400.dp -> screenWidthDp / numColumns // Small screen size
-            screenWidthDp < 600.dp -> screenWidthDp / numColumns // Medium screen size
+            screenWidthDp < 600.dp -> screenWidthDp / numColumns
             else -> 60.dp // Large screen size
         }
 
@@ -114,7 +114,7 @@ fun WordGrid(
         modifier =
             Modifier
                 .background(Color.LightGray),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         WordList(
             modifier = Modifier.width(cellSize * grid.size),
@@ -157,6 +157,7 @@ fun GridContainer(
                 .size(gridData.cellSize * gridData.grid[0].size, gridData.cellSize * gridData.grid.size)
                 .background(Color.White, shape = RoundedCornerShape(8.dp))
                 .drawLines(gridData.selectedLines, gridData.currentLine)
+                .border(1.dp, Color.Black)
                 .handleGestures(viewModel, cellSizePx),
         contentAlignment = Alignment.Center,
     ) {
@@ -333,6 +334,6 @@ private fun WordGridPreview() {
 
     WordGrid(
         viewModel = viewModel,
-        puzzle = Puzzle(1, words),
+        wordList = words,
     )
 }

@@ -10,7 +10,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.wordsearch.ui.screens.GameScreen
 import com.example.wordsearch.ui.screens.HomeScreen
-import com.example.wordsearch.ui.screens.PuzzleSelectionScreen
 import com.example.wordsearch.ui.theme.WordSearchTheme
 
 class MainActivity : ComponentActivity() {
@@ -35,25 +34,12 @@ fun MainApp() {
         composable("home") {
             HomeScreen(navController = navController)
         }
-        composable("puzzle/{level}") { backStackEntry ->
-            val puzzleLevel = backStackEntry.arguments?.getString("level")?.toIntOrNull() ?: 1
-            PuzzleSelectionScreen(
-                level = puzzleLevel,
-                navigateToGameScreen = { level: Int, id: Int ->
-                    navController.navigate("game/$level/$id")
-                },
-            )
-        }
-        composable("game/{level}/{id}") { backStackEntry ->
+        composable("game/{id}") { backStackEntry ->
             // Navigate to GameScreen
-            // Pass the level and id from the arguments
-            val level = backStackEntry.arguments?.getString("level")?.toIntOrNull() ?: 1
             val id = backStackEntry.arguments?.getString("id")?.toIntOrNull() ?: 1
             GameScreen(
-                level = level,
                 puzzleId = id,
                 navigateToHomeScreen = {
-//                    backStackEntry.arguments?.clear()
                     navController.popBackStack("home", inclusive = false)
                 },
             )

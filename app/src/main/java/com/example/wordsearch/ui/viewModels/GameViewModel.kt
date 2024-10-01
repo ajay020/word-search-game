@@ -5,43 +5,41 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class GameViewModel : ViewModel() {
+    private val _currentPuzzlePartIndex = MutableStateFlow(0)
+    val currentPuzzlePartIndex: StateFlow<Int> = _currentPuzzlePartIndex
 
-    private val _currentPuzzleId = MutableStateFlow(1)
-    val currentPuzzleId: StateFlow<Int> = _currentPuzzleId
+    private val _maxPuzzleParts = MutableStateFlow(0)
+    val maxPuzzleParts: StateFlow<Int> = _maxPuzzleParts
 
-    private val _maxPuzzlesPerLevel = MutableStateFlow(2)
-    val maxPuzzlesPerLevel: StateFlow<Int> = _maxPuzzlesPerLevel
-
-    private val _isAllPuzzlesCompleted = MutableStateFlow(false)
-    val isAllPuzzlesCompleted: StateFlow<Boolean> = _isAllPuzzlesCompleted
+    private val _isAllPuzzlePartsCompleted = MutableStateFlow(false)
+    val isAllPuzzlePartsCompleted: StateFlow<Boolean> = _isAllPuzzlePartsCompleted
 
     fun initCurrentPuzzleId(puzzleId: Int) {
-        _currentPuzzleId.value = puzzleId
-    }
-
-    fun initMaxPuzzlesPerLevel(totalPuzzles: Int) {
-        _maxPuzzlesPerLevel.value = totalPuzzles
+        _currentPuzzlePartIndex.value = puzzleId
     }
 
     private fun checkPuzzleCompletion() {
         // Logic to check if the current puzzle is completed
-        if (_currentPuzzleId.value > _maxPuzzlesPerLevel.value) {
-            onAllPuzzlesCompleted()
+        if (_currentPuzzlePartIndex.value >= _maxPuzzleParts.value) {
+            onAllPuzzlePartsCompleted()
         }
     }
 
-    private fun onAllPuzzlesCompleted() {
-        _isAllPuzzlesCompleted.value = true
+    private fun onAllPuzzlePartsCompleted() {
+        _isAllPuzzlePartsCompleted.value = true
     }
 
     fun resetGameState() {
-        _currentPuzzleId.value = 1
-        _isAllPuzzlesCompleted.value = false
+        _isAllPuzzlePartsCompleted.value = false
     }
 
-    fun onNextPuzzle() {
+    fun onNextPuzzlePart() {
         // Logic to move to the next puzzle
-        _currentPuzzleId.value += 1
+        _currentPuzzlePartIndex.value += 1
         checkPuzzleCompletion()
+    }
+
+    fun initMaxPuzzleParts(size: Int) {
+        _maxPuzzleParts.value = size
     }
 }

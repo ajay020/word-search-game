@@ -2,7 +2,6 @@
 
 package com.example.wordsearch.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -24,12 +23,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wordsearch.data.Puzzle
+import com.example.wordsearch.data.PuzzlePart
 import com.example.wordsearch.ui.components.CongratsDialog
 import com.example.wordsearch.ui.components.WordGrid
 import com.example.wordsearch.ui.viewModels.GameViewModel
@@ -41,29 +40,31 @@ const val TAG = "WordSearchScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
-    level: Int,
     puzzleId: Int,
     navigateToHomeScreen: () -> Unit,
 ) {
-    val fileName = "level_$level.json"
     val context = LocalContext.current
     val wordGridViewModal: WordGridViewModel = viewModel()
     val gameViewModel: GameViewModel = viewModel()
 
     var puzzle by remember { mutableStateOf<Puzzle?>(null) }
+    var puzzleParts by remember { mutableStateOf<List<PuzzlePart>>(emptyList()) }
     val isGameCompleted by wordGridViewModal.isGameCompleted.collectAsState()
-    val currentPuzzleId by gameViewModel.currentPuzzleId.collectAsState()
-    val isAllPuzzlesCompleted by gameViewModel.isAllPuzzlesCompleted.collectAsState()
+    val currentPuzzlePartIndex by gameViewModel.currentPuzzlePartIndex.collectAsState()
+    var showExitDialog by remember { mutableStateOf(true) }
 
-    LaunchedEffect(fileName) {
-        gameViewModel.initCurrentPuzzleId(puzzleId)
-        val puzzles = loadPuzzlesFromJson(context, fileName)
-        gameViewModel.initMaxPuzzlesPerLevel(puzzles.size)
+    LaunchedEffect(puzzleId) {
+        puzzle = loadPuzzlesFromJson(context).firstOrNull { it.id == puzzleId }
+        puzzle?.let {
+            puzzleParts = it.parts
+            gameViewModel.initMaxPuzzleParts(puzzleParts.size)
+        }
     }
 
-    LaunchedEffect(fileName, currentPuzzleId) {
-        val puzzles = loadPuzzlesFromJson(context, fileName)
-        puzzle = puzzles.firstOrNull { it.id == currentPuzzleId }
+    LaunchedEffect(currentPuzzlePartIndex) {
+        puzzleParts.getOrNull(currentPuzzlePartIndex)?.let {
+            wordGridViewModal.initGrid(it.words)
+        }
     }
 
     Scaffold(
@@ -71,37 +72,41 @@ fun GameScreen(
         topBar = {
             TopAppBar(
                 modifier = Modifier.background(Color.Blue.copy(alpha = 0.3f)),
-                title = { Text("Level $level") },
+                title = { Text("Game Screen") },
             )
         },
     ) { innerPadding ->
-        val screenSize = LocalConfiguration.current.screenWidthDp
-        val screenHeight = LocalConfiguration.current.screenHeightDp
-        val screenLayout = LocalConfiguration.current.screenLayout
 
-        Log.d("GameScreen", "screen width: $screenSize height: $screenHeight layout: $screenLayout")
-
-        GameScreenContent(
-            modifier = Modifier.padding(innerPadding),
-            puzzle = puzzle,
-        )
+        if (puzzleParts.isNotEmpty() && currentPuzzlePartIndex < puzzleParts.size) {
+            GameScreenContent(
+                modifier = Modifier.padding(innerPadding),
+                puzzlePart = puzzleParts[currentPuzzlePartIndex],
+            )
+        }
     }
 
-    if (isAllPuzzlesCompleted) {
+    // Show exit dialog when the game is completed and it's the last puzzle part
+    if (isGameCompleted && currentPuzzlePartIndex >= puzzleParts.size - 1 && showExitDialog) {
         ExitDialog(
             modifier = Modifier,
-            navigateToHomeScreen,
-            onDismiss = { gameViewModel.resetGameState() },
+            navigateToHomeScreen = {
+                showExitDialog = false // Close the dialog before navigation
+                navigateToHomeScreen()
+            },
+            onDismiss = {
+                showExitDialog = false // Close the dialog on dismiss
+                gameViewModel.resetGameState()
+            },
         )
     }
 
-    if (isGameCompleted) {
-        // Show congrats dialog
+    // Show congrats dialog if the game is completed but it's not the last puzzle part
+    if (isGameCompleted && currentPuzzlePartIndex < puzzleParts.size - 1) {
         CongratsDialog(
             onDismiss = { /* Maybe reset or dismiss */ },
             onNextGame = {
                 wordGridViewModal.resetGameState()
-                gameViewModel.onNextPuzzle()
+                gameViewModel.onNextPuzzlePart()
             },
         )
     }
@@ -110,7 +115,7 @@ fun GameScreen(
 @Composable
 fun GameScreenContent(
     modifier: Modifier = Modifier,
-    puzzle: Puzzle?,
+    puzzlePart: PuzzlePart,
 ) {
     Column(
         modifier =
@@ -120,9 +125,7 @@ fun GameScreenContent(
                 .background(Color.LightGray),
         verticalArrangement = Arrangement.Center,
     ) {
-        puzzle?.let {
-            WordGrid(puzzle = puzzle!!)
-        }
+        WordGrid(wordList = puzzlePart.words)
     }
 }
 
@@ -136,16 +139,16 @@ fun ExitDialog(
         modifier = modifier,
         onDismissRequest = { },
         title = { Text(text = "Great job!") },
-        text = { Text("You've completed all the puzzles of this level.") },
+        text = { Text("You have completed all puzzle in this stage!") },
         confirmButton = {
             Button(
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
-                    navigateToHomeScreen()
                     onDismiss()
+                    navigateToHomeScreen()
                 },
             ) {
-                Text("Go to next level")
+                Text("Go to next Stage")
             }
         },
     )
@@ -154,12 +157,8 @@ fun ExitDialog(
 @Preview(showBackground = true)
 @Composable
 private fun GameScreenPreview() {
-    val puzzle =
-        Puzzle(
-            1,
-            listOf("APPLE", "BANANA", "CHERRY", "DATE", "EGG", "FRUIT", "GRAPE"),
-        )
-    GameScreenContent(puzzle = puzzle)
+    val puzzlePart = PuzzlePart(1, listOf("apple", "banana", "cherry"))
+    GameScreenContent(puzzlePart = puzzlePart)
 //    ExitDialog(
 //        navigateToHomeScreen = {},
 //        onDismiss = {},

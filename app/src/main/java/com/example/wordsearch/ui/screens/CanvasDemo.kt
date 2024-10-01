@@ -99,6 +99,7 @@ fun WordSearchGrid(
                                                                 startCell!!,
                                                                 endCell!!,
                                                                 gridSize,
+                                                                gridSize
                                                             )
                                                     }
                                                 },

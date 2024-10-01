@@ -97,9 +97,17 @@ class WordGridViewModel : ViewModel() {
         val (row, col) = offsetToGridCoordinate(offset, cellSize, _gridState.value.size)
         val newCell = row to col
 
-        if (isStraightLine(startCell!!, newCell)) {
+        if (isStraightLine(startCell!!, newCell) &&
+            newCell.first < _gridState.value.size &&
+            newCell.second < _gridState.value[0].size
+        ) {
             _selectedCells.value =
-                calculateSelectedCells(startCell!!, newCell, _gridState.value.size)
+                calculateSelectedCells(
+                    start = startCell!!,
+                    end = newCell,
+                    columnSize = _gridState.value[0].size,
+                    rowSize = _gridState.value.size,
+                )
 
             _currentWord.value =
                 _selectedCells.value.map { (r, c) -> _gridState.value[r][c] }.joinToString("")
@@ -112,6 +120,11 @@ class WordGridViewModel : ViewModel() {
                 )
             val endOffset =
                 getCellCenter(row, col, cellSize)
+
+            Log.d(
+                "WordGrid",
+                " endOffset: $endOffset newCell: $newCell selected cells : ${_selectedCells.value}",
+            )
 
             _currentLine.value =
                 _currentLine.value?.copy(

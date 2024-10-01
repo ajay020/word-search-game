@@ -15,7 +15,7 @@ enum class Direction {
 
 object GridUtils {
     // Minimum grid size
-    private const val MIN_GRID_SIZE = 6
+    private const val MIN_GRID_SIZE = 5
 
     // Generate a random grid with words placed
     fun generateGrid(wordList: List<String>): List<MutableList<Char>> {
@@ -167,7 +167,8 @@ object GridUtils {
     fun calculateSelectedCells(
         start: Pair<Int, Int>,
         end: Pair<Int, Int>,
-        gridSize: Int,
+        rowSize: Int,
+        columnSize: Int,
     ): Set<Pair<Int, Int>> {
         val selectedCells = mutableSetOf<Pair<Int, Int>>()
         val (startRow, startCol) = start
@@ -183,7 +184,7 @@ object GridUtils {
             val t = i.toFloat() / steps
             val row = (startRow + t * rowDiff).toInt()
             val col = (startCol + t * colDiff).toInt()
-            if (row in 0 until gridSize && col in 0 until gridSize) {
+            if (row in 0 until rowSize && col in 0 until columnSize) {
                 selectedCells.add(Pair(row, col))
             }
         }
