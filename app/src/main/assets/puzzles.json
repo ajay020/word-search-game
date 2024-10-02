@@ -1,39 +1,63 @@
-   [
-    {
-      "id": 1,
-      "parts": [
-        {
-          "partId": 1,
-          "words": [
-            "cat",
-            "mat",
-            "bat"
-          ],
-          "isCompleted": false
-        },
-        {
-          "partId": 2,
-          "words": [
-            "dam",
-            "jog",
-            "mine"
-          ],
-          "isCompleted": false
-        }
-      ]
-    },
-    {
-      "id": 2,
-      "parts": [
-        {
-          "partId": 1,
-          "words": [
-            "time",
-            "airplane",
-            "here"
-          ],
-          "isCompleted": false
-        }
-      ]
-    }
-  ]
+[
+  {
+    "id": 1,
+    "parts": [
+      {
+        "partId": 1,
+        "words": [
+          "cat",
+          "mat",
+          "bat"
+        ],
+        "isCompleted": false
+      },
+      {
+        "partId": 2,
+        "words": [
+          "dam",
+          "jog",
+          "mine"
+        ],
+        "isCompleted": false
+      },
+      {
+        "partId": 3,
+        "words": [
+          "kind",
+          "love",
+          "respect"
+        ],
+        "isCompleted": false
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "parts": [
+      {
+        "partId": 1,
+        "words": [
+          "time",
+          "airplane",
+          "here"
+        ],
+        "isCompleted": false
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "parts": [
+      {
+        "partId": 1,
+        "words": [
+          "all",
+          "you",
+          "is",
+          "now"
+        ],
+        "isCompleted": false
+      }
+    ]
+  }
+]

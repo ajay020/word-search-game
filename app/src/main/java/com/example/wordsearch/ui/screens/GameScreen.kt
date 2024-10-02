@@ -42,10 +42,10 @@ const val TAG = "WordSearchScreen"
 fun GameScreen(
     puzzleId: Int,
     navigateToHomeScreen: () -> Unit,
+    gameViewModel: GameViewModel = viewModel(factory = GameViewModel.Factory),
 ) {
     val context = LocalContext.current
     val wordGridViewModal: WordGridViewModel = viewModel()
-    val gameViewModel: GameViewModel = viewModel()
 
     var puzzle by remember { mutableStateOf<Puzzle?>(null) }
     var puzzleParts by remember { mutableStateOf<List<PuzzlePart>>(emptyList()) }
@@ -57,7 +57,7 @@ fun GameScreen(
         puzzle = loadPuzzlesFromJson(context).firstOrNull { it.id == puzzleId }
         puzzle?.let {
             puzzleParts = it.parts
-            gameViewModel.initMaxPuzzleParts(puzzleParts.size)
+            gameViewModel.initCurrentPuzzlePartIndex(puzzleId)
         }
     }
 
@@ -87,6 +87,13 @@ fun GameScreen(
 
     // Show exit dialog when the game is completed and it's the last puzzle part
     if (isGameCompleted && currentPuzzlePartIndex >= puzzleParts.size - 1 && showExitDialog) {
+        // Save progress
+        gameViewModel.savePuzzleProgress(
+            puzzleId = puzzleId,
+            totalParts = puzzleParts.size,
+            completedParts = currentPuzzlePartIndex + 1,
+        )
+
         ExitDialog(
             modifier = Modifier,
             navigateToHomeScreen = {
@@ -95,18 +102,25 @@ fun GameScreen(
             },
             onDismiss = {
                 showExitDialog = false // Close the dialog on dismiss
-                gameViewModel.resetGameState()
             },
         )
     }
 
     // Show congrats dialog if the game is completed but it's not the last puzzle part
     if (isGameCompleted && currentPuzzlePartIndex < puzzleParts.size - 1) {
+        // Save progress
+        gameViewModel.savePuzzleProgress(
+            puzzleId = puzzleId,
+            completedParts = currentPuzzlePartIndex + 1,
+            totalParts = puzzleParts.size,
+        )
+
         CongratsDialog(
-            onDismiss = { /* Maybe reset or dismiss */ },
+            onDismiss = { navigateToHomeScreen() },
             onNextGame = {
-                wordGridViewModal.resetGameState()
                 gameViewModel.onNextPuzzlePart()
+                // Reset the game state
+                wordGridViewModal.resetGameState()
             },
         )
     }

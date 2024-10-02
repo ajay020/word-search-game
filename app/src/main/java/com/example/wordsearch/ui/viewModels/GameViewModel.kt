@@ -1,45 +1,56 @@
 package com.example.wordsearch.ui.viewModels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.wordsearch.WordSearchApplication
+import com.example.wordsearch.repository.PuzzleProgressRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class GameViewModel : ViewModel() {
+class GameViewModel(
+    private val puzzleProgressRepository: PuzzleProgressRepository,
+) : ViewModel() {
     private val _currentPuzzlePartIndex = MutableStateFlow(0)
     val currentPuzzlePartIndex: StateFlow<Int> = _currentPuzzlePartIndex
 
-    private val _maxPuzzleParts = MutableStateFlow(0)
-    val maxPuzzleParts: StateFlow<Int> = _maxPuzzleParts
-
-    private val _isAllPuzzlePartsCompleted = MutableStateFlow(false)
-    val isAllPuzzlePartsCompleted: StateFlow<Boolean> = _isAllPuzzlePartsCompleted
-
-    fun initCurrentPuzzleId(puzzleId: Int) {
-        _currentPuzzlePartIndex.value = puzzleId
-    }
-
-    private fun checkPuzzleCompletion() {
-        // Logic to check if the current puzzle is completed
-        if (_currentPuzzlePartIndex.value >= _maxPuzzleParts.value) {
-            onAllPuzzlePartsCompleted()
+    fun initCurrentPuzzlePartIndex(puzzleId: Int) {
+        val puzzleProgress = puzzleProgressRepository.getPuzzleProgress(puzzleId)
+        if (puzzleProgress != null) {
+            _currentPuzzlePartIndex.value = puzzleProgress.completedParts
         }
     }
 
-    private fun onAllPuzzlePartsCompleted() {
-        _isAllPuzzlePartsCompleted.value = true
-    }
+    fun savePuzzleProgress(
+        puzzleId: Int,
+        completedParts: Int,
+        totalParts: Int,
+    ) {
+        Log.d("GameViewModel", "Saving puzzle progress: $puzzleId, $totalParts, $completedParts")
 
-    fun resetGameState() {
-        _isAllPuzzlePartsCompleted.value = false
+        puzzleProgressRepository.savePuzzleProgress(
+            puzzleId = puzzleId,
+            completedParts = completedParts,
+            totalParts = totalParts,
+        )
     }
 
     fun onNextPuzzlePart() {
         // Logic to move to the next puzzle
         _currentPuzzlePartIndex.value += 1
-        checkPuzzleCompletion()
     }
 
-    fun initMaxPuzzleParts(size: Int) {
-        _maxPuzzleParts.value = size
+    companion object {
+        val Factory: ViewModelProvider.Factory =
+            viewModelFactory {
+                initializer {
+                    val application = (this[APPLICATION_KEY] as WordSearchApplication)
+                    val puzzleProgressRepository = application.container.puzzleProgressRepository
+                    GameViewModel(puzzleProgressRepository)
+                }
+            }
     }
 }
