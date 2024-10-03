@@ -255,4 +255,63 @@ object GridUtils {
                     )
             )
     }
+
+    // Hint
+    fun findWordInGrid(
+        grid: List<List<Char>>,
+        word: String,
+    ): Pair<Int, Int>? {
+        val directions =
+            listOf(
+                Pair(0, 1), // Right (horizontal)
+                Pair(0, -1), // Left (horizontal)
+                Pair(1, 0), // Down (vertical)
+                Pair(-1, 0), // Up (vertical)
+                Pair(1, 1), // Diagonal right-down
+                Pair(1, -1), // Diagonal left-down
+                Pair(-1, 1), // Diagonal right-up
+                Pair(-1, -1), // Diagonal left-up
+            )
+
+        for (row in grid.indices) {
+            for (col in grid[row].indices) {
+                if (grid[row][col] == word[0]) {
+                    val cellCoordinate = Pair(row, col)
+                    // First character matches, check if the full word fits in any direction
+                    for ((dRow, dCol) in directions) {
+                        if (checkWordInDirection(grid, word, cellCoordinate, dRow, dCol)) {
+                            // Return the starting position of the word
+                            return Pair(row, col)
+                        }
+                    }
+                }
+            }
+        }
+        // Word not found
+        return null
+    }
+
+    private fun checkWordInDirection(
+        grid: List<List<Char>>,
+        word: String,
+        cellCoordinate: Pair<Int, Int>,
+        dRow: Int,
+        dCol: Int,
+    ): Boolean {
+        var currentRow = cellCoordinate.first
+        var currentCol = cellCoordinate.second
+
+        for (char in word) {
+            if (currentRow !in grid.indices ||
+                currentCol !in grid[currentRow].indices ||
+                grid[currentRow][currentCol] != char
+            ) {
+                return false
+            }
+            // Move in the specified direction
+            currentRow += dRow
+            currentCol += dCol
+        }
+        return true
+    }
 }

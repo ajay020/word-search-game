@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import com.example.wordsearch.data.Line
 import com.example.wordsearch.data.colors
 import com.example.wordsearch.utils.GridUtils.calculateSelectedCells
-import com.example.wordsearch.utils.GridUtils.generateGrid
+import com.example.wordsearch.utils.GridUtils.findWordInGrid
 import com.example.wordsearch.utils.GridUtils.getCellCenter
 import com.example.wordsearch.utils.GridUtils.interpolatePoints
 import com.example.wordsearch.utils.GridUtils.isStraightLine
@@ -23,6 +23,9 @@ class WordGridViewModel : ViewModel() {
 
     private val _gridState = MutableStateFlow<List<List<Char>>>(emptyList())
     val gridState: StateFlow<List<List<Char>>> = _gridState
+
+    private val _positionOfHintWord = MutableStateFlow<Pair<Int, Int>?>(null)
+    val positionOfHintWord = _positionOfHintWord
 
     private val _wordListState = MutableStateFlow<List<String>>(emptyList())
     val wordListState: StateFlow<List<String>> = _wordListState
@@ -48,8 +51,11 @@ class WordGridViewModel : ViewModel() {
     private var startCell: Pair<Int, Int>? = null
     private var currentColorIndex = 0
 
-    fun initGrid(words: List<String>) {
-        _gridState.value = generateGrid(words)
+    fun initGrid(
+        words: List<String>,
+        grid: List<List<Char>>,
+    ) {
+        _gridState.value = grid
         _wordListState.value = words
     }
 
@@ -169,5 +175,13 @@ class WordGridViewModel : ViewModel() {
     private fun getNextColor(): Color {
         currentColorIndex %= availableColors.size
         return availableColors[currentColorIndex]
+    }
+
+    fun highlightFirstCharacter() {
+        val word = _wordListState.value.first { !_foundWords.value.contains(it) }
+
+        // Find the cell where the first character is located in the grid
+        val position = findWordInGrid(grid = _gridState.value, word = word)
+        _positionOfHintWord.value = position
     }
 }

@@ -2,15 +2,24 @@
 
 package com.example.wordsearch.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -21,12 +30,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wordsearch.R
 import com.example.wordsearch.data.Puzzle
 import com.example.wordsearch.data.PuzzlePart
 import com.example.wordsearch.ui.components.CongratsDialog
@@ -35,9 +49,8 @@ import com.example.wordsearch.ui.viewModels.GameViewModel
 import com.example.wordsearch.ui.viewModels.WordGridViewModel
 import com.example.wordsearch.utils.FileUtils.loadPuzzlesFromJson
 
-const val TAG = "WordSearchScreen"
+const val TAG = "GameScreen"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameScreen(
     puzzleId: Int,
@@ -47,6 +60,8 @@ fun GameScreen(
     val context = LocalContext.current
     val wordGridViewModal: WordGridViewModel = viewModel()
 
+    val grid by gameViewModel.grid.collectAsState()
+    val coins by gameViewModel.coins.collectAsState()
     var puzzle by remember { mutableStateOf<Puzzle?>(null) }
     var puzzleParts by remember { mutableStateOf<List<PuzzlePart>>(emptyList()) }
     val isGameCompleted by wordGridViewModal.isGameCompleted.collectAsState()
@@ -63,16 +78,21 @@ fun GameScreen(
 
     LaunchedEffect(currentPuzzlePartIndex) {
         puzzleParts.getOrNull(currentPuzzlePartIndex)?.let {
-            wordGridViewModal.initGrid(it.words)
+            gameViewModel.initGrid(it.words)
         }
     }
 
     Scaffold(
         modifier = Modifier,
         topBar = {
-            TopAppBar(
-                modifier = Modifier.background(Color.Blue.copy(alpha = 0.3f)),
-                title = { Text("Game Screen") },
+            GameScreenTopBar(
+                title = "Game screen",
+                coins = coins,
+                onCloseClick = { navigateToHomeScreen() },
+                onHintClick = {
+                    gameViewModel.useHint()
+                    wordGridViewModal.highlightFirstCharacter()
+                },
             )
         },
     ) { innerPadding ->
@@ -81,6 +101,7 @@ fun GameScreen(
             GameScreenContent(
                 modifier = Modifier.padding(innerPadding),
                 puzzlePart = puzzleParts[currentPuzzlePartIndex],
+                grid = grid,
             )
         }
     }
@@ -130,7 +151,25 @@ fun GameScreen(
 fun GameScreenContent(
     modifier: Modifier = Modifier,
     puzzlePart: PuzzlePart,
+    grid: List<List<Char>>,
 ) {
+
+    if (grid.isEmpty() || grid[0].isEmpty()) {
+        Box(
+            modifier =
+            Modifier
+                .background(Color.Blue.copy(red = 1f, green = 0.9f, blue = 0.2f))
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(50.dp),
+                color = Color.Blue,
+            )
+        }
+        return
+    }
+
     Column(
         modifier =
             modifier
@@ -139,7 +178,12 @@ fun GameScreenContent(
                 .background(Color.LightGray),
         verticalArrangement = Arrangement.Center,
     ) {
-        WordGrid(wordList = puzzlePart.words)
+        if (grid.isNotEmpty()) {
+            WordGrid(
+                wordList = puzzlePart.words,
+                grid = grid,
+            )
+        }
     }
 }
 
@@ -168,13 +212,74 @@ fun ExitDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun GameScreenTopBar(
+    title: String,
+    coins: Int,
+    onCloseClick: () -> Unit,
+    onHintClick: () -> Unit,
+) {
+    TopAppBar(
+        title = {
+            Text(text = title, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+        },
+        navigationIcon = {
+            IconButton(onClick = onCloseClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_pause),
+                    contentDescription = "Pause",
+                )
+            }
+        },
+        actions = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(end = 16.dp),
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_monetization_on),
+                    contentDescription = "Coins",
+                    tint = Color.Blue,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = coins.toString(),
+                    fontSize = 16.sp,
+                )
+            }
+            IconButton(onClick = onHintClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_lightbulb),
+                    contentDescription = "Light bulb",
+                    tint = Color.Red,
+                )
+            }
+        },
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun GameScreenPreview() {
-    val puzzlePart = PuzzlePart(1, listOf("apple", "banana", "cherry"))
-    GameScreenContent(puzzlePart = puzzlePart)
+    val puzzlePart = PuzzlePart(1, listOf("application", "ban", "cher"))
+    GameScreenContent(
+        puzzlePart = puzzlePart,
+        grid = listOf(
+            listOf('a', 'p', 'p', 'c', 'R'),
+            listOf('E', 'F', 'b', 'H', 'T'),
+            listOf('I', 'e', 'a', 'L', 'W'),
+            listOf('r', 'N', 'n', 'P', 'Q'),
+        )
+    )
 //    ExitDialog(
 //        navigateToHomeScreen = {},
 //        onDismiss = {},
 //    )
+    GameScreenTopBar(
+        title = "Game screen",
+        coins = 100,
+        onCloseClick = {},
+        onHintClick = {},
+    )
 }
