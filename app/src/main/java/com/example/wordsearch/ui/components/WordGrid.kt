@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +39,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -71,15 +73,14 @@ fun WordGrid(
     if (grid.isEmpty() || grid[0].isEmpty()) {
         Box(
             modifier =
-                Modifier
-                    .fillMaxSize(),
+            Modifier
+                .background(Color.Blue.copy( red = 1f, green = 0.9f, blue = 0.2f ))
+                .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = "Grid is loading...",
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontSize = 20.sp,
+            CircularProgressIndicator(
+                modifier = Modifier.size(50.dp),
+                color = Color.Blue,
             )
         }
         return
@@ -296,7 +297,7 @@ fun WordList(
     FlowRow(
         modifier =
             modifier
-                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                .background(Color.Transparent, shape = RoundedCornerShape(8.dp))
                 .padding(8.dp),
     ) {
         words.forEach { word ->
@@ -304,12 +305,13 @@ fun WordList(
 
             Text(
                 modifier = Modifier.padding(8.dp),
-                text = if (isFound) "✅ $word" else word,
+                text =  word,
                 style =
                     TextStyle(
-                        color = if (isFound) Color.Green else Color.Black,
+                        color = if (isFound) Color.Gray else Color.Black,
                         fontSize = textSize,
                         fontWeight = FontWeight.Medium,
+                        textDecoration = if (isFound) TextDecoration.LineThrough else TextDecoration.None,
                     ),
             )
         }
@@ -327,7 +329,7 @@ private fun WordGridPreview() {
         listOf(
             "APPLE",
             "CAT",
-            "AEROPLANE",
+            "BAT",
         )
 
     val viewModel = WordGridViewModel()
@@ -336,4 +338,5 @@ private fun WordGridPreview() {
         viewModel = viewModel,
         wordList = words,
     )
+
 }
