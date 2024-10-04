@@ -1,5 +1,6 @@
 package com.example.wordsearch.utils
 
+import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.lerp
 import kotlin.math.abs
@@ -146,10 +147,13 @@ object GridUtils {
     fun offsetToGridCoordinate(
         offset: Offset,
         cellSizePx: Float,
-        gridSize: Int,
+        rowSize: Int,
+        colSize: Int,
     ): Pair<Int, Int> {
-        val col = (offset.x / cellSizePx).toInt().coerceIn(0, gridSize - 1)
-        val row = (offset.y / cellSizePx).toInt().coerceIn(0, gridSize - 1)
+        // Calculate the row and column based on the offset
+        val col = (offset.x / cellSizePx).toInt().coerceIn(0, colSize - 1)
+        val row = (offset.y / cellSizePx).toInt().coerceIn(0, rowSize - 1)
+        Log.d("WordGrid", "offset: $offset cellSizePx: $cellSizePx r: $row c: $col")
 
         return row to col
     }

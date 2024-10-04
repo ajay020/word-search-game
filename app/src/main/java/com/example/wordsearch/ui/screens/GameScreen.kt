@@ -48,6 +48,7 @@ import com.example.wordsearch.ui.components.WordGrid
 import com.example.wordsearch.ui.viewModels.GameViewModel
 import com.example.wordsearch.ui.viewModels.WordGridViewModel
 import com.example.wordsearch.utils.FileUtils.loadPuzzlesFromJson
+import com.example.wordsearch.utils.GridUtils.generateGrid
 
 const val TAG = "GameScreen"
 
@@ -184,6 +185,7 @@ fun GameScreenContent(
                 grid = grid,
             )
         }
+
     }
 }
 
@@ -262,15 +264,10 @@ fun GameScreenTopBar(
 @Preview(showBackground = true)
 @Composable
 private fun GameScreenPreview() {
-    val puzzlePart = PuzzlePart(1, listOf("application", "ban", "cher"))
+    val puzzlePart = PuzzlePart(1, listOf("app", "ban", "cher"))
     GameScreenContent(
         puzzlePart = puzzlePart,
-        grid = listOf(
-            listOf('a', 'p', 'p', 'c', 'R'),
-            listOf('E', 'F', 'b', 'H', 'T'),
-            listOf('I', 'e', 'a', 'L', 'W'),
-            listOf('r', 'N', 'n', 'P', 'Q'),
-        )
+        grid = generateGrid( puzzlePart.words)
     )
 //    ExitDialog(
 //        navigateToHomeScreen = {},

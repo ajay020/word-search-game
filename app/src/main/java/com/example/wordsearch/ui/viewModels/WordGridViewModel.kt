@@ -50,6 +50,12 @@ class WordGridViewModel : ViewModel() {
 
     private var startCell: Pair<Int, Int>? = null
     private var currentColorIndex = 0
+    private var cellSizePx: Float = 0f
+        private set
+
+    fun updateCellSizePx(newSizePx: Float) {
+        cellSizePx = newSizePx
+    }
 
     fun initGrid(
         words: List<String>,
@@ -59,17 +65,17 @@ class WordGridViewModel : ViewModel() {
         _wordListState.value = words
     }
 
-    fun onDragStart(
-        offset: Offset,
-        cellSize: Float,
-    ) {
-        val (row, col) = offsetToGridCoordinate(offset, cellSize, _gridState.value.size)
+    fun onDragStart(offset: Offset) {
+        val (row, col) =
+            offsetToGridCoordinate(
+                offset,
+                cellSizePx,
+                rowSize = _gridState.value.size,
+                colSize = _gridState.value[0].size,
+            )
         startCell = row to col
-        Log.d(TAG, "DragStart:  $startCell")
-
         _selectedCells.value = setOf(row to col)
-
-        val line = Line(offsets = listOf(getCellCenter(row, col, cellSize)), color = getNextColor())
+        val line = Line(offsets = listOf(getCellCenter(row, col, cellSizePx)), color = getNextColor())
         _currentLine.value = line
     }
 
@@ -96,11 +102,14 @@ class WordGridViewModel : ViewModel() {
         resetDragState()
     }
 
-    fun onDrag(
-        offset: Offset,
-        cellSize: Float,
-    ) {
-        val (row, col) = offsetToGridCoordinate(offset, cellSize, _gridState.value.size)
+    fun onDrag(offset: Offset) {
+        val (row, col) =
+            offsetToGridCoordinate(
+                offset,
+                cellSizePx,
+                rowSize = _gridState.value.size,
+                colSize = _gridState.value[0].size,
+            )
         val newCell = row to col
 
         if (isStraightLine(startCell!!, newCell) &&
@@ -122,14 +131,14 @@ class WordGridViewModel : ViewModel() {
                 getCellCenter(
                     startCell!!.first,
                     startCell!!.second,
-                    cellSize,
+                    cellSizePx,
                 )
             val endOffset =
-                getCellCenter(row, col, cellSize)
+                getCellCenter(row, col, cellSizePx)
 
             Log.d(
                 "WordGrid",
-                " endOffset: $endOffset newCell: $newCell selected cells : ${_selectedCells.value}",
+                " endOffset: $endOffset cellSizePx: $cellSizePx",
             )
 
             _currentLine.value =

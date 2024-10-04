@@ -7,25 +7,25 @@
         "words": [
           "cat",
           "mat",
-          "bat"
+          "rat"
         ],
         "isCompleted": false
       },
       {
         "partId": 2,
         "words": [
-          "dam",
-          "jog",
-          "mine"
+          "kind",
+          "love",
+          "respect"
         ],
         "isCompleted": false
       },
       {
         "partId": 3,
         "words": [
-          "kind",
-          "love",
-          "respect"
+          "patient",
+          "calm",
+          "perseverance"
         ],
         "isCompleted": false
       }
