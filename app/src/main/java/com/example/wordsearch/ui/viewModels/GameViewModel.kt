@@ -57,8 +57,8 @@ class GameViewModel(
 
     // Function to use a hint
     fun useHint() {
-        if (_coins.value > 0 && _availableHint.value > 0) {
-            _coins.value -= 1 // Deduct 1 coin per hint
+        if (_coins.value > 0) {
+            _coins.value -= 10 // Deduct 1 coin per hint
             _availableHint.value -= 1
         } else {
             // Handle no more coins available, e.g., show a message

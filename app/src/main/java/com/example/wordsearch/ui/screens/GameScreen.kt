@@ -154,7 +154,6 @@ fun GameScreenContent(
     puzzlePart: PuzzlePart,
     grid: List<List<Char>>,
 ) {
-
     if (grid.isEmpty() || grid[0].isEmpty()) {
         Box(
             modifier =
@@ -175,9 +174,8 @@ fun GameScreenContent(
         modifier =
             modifier
                 .fillMaxSize()
-                .padding(2.dp)
                 .background(Color.LightGray),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top
     ) {
         if (grid.isNotEmpty()) {
             WordGrid(
@@ -185,7 +183,6 @@ fun GameScreenContent(
                 grid = grid,
             )
         }
-
     }
 }
 
@@ -264,19 +261,28 @@ fun GameScreenTopBar(
 @Preview(showBackground = true)
 @Composable
 private fun GameScreenPreview() {
-    val puzzlePart = PuzzlePart(1, listOf("app", "ban", "cher"))
+    val words =
+        listOf(
+            "all",
+            "you",
+            "have",
+            "is",
+            "now"
+        )
+    val puzzlePart = PuzzlePart(1, words)
+
     GameScreenContent(
         puzzlePart = puzzlePart,
-        grid = generateGrid( puzzlePart.words)
+        grid = generateGrid( words)
     )
 //    ExitDialog(
 //        navigateToHomeScreen = {},
 //        onDismiss = {},
 //    )
-    GameScreenTopBar(
-        title = "Game screen",
-        coins = 100,
-        onCloseClick = {},
-        onHintClick = {},
-    )
+//    GameScreenTopBar(
+//        title = "Game screen",
+//        coins = 100,
+//        onCloseClick = {},
+//        onHintClick = {},
+//    )
 }

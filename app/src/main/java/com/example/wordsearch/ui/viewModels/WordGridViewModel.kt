@@ -1,6 +1,5 @@
 package com.example.wordsearch.ui.viewModels
 
-import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -24,8 +23,8 @@ class WordGridViewModel : ViewModel() {
     private val _gridState = MutableStateFlow<List<List<Char>>>(emptyList())
     val gridState: StateFlow<List<List<Char>>> = _gridState
 
-    private val _positionOfHintWord = MutableStateFlow<Pair<Int, Int>?>(null)
-    val positionOfHintWord = _positionOfHintWord
+    private val _positionOfHintWords = MutableStateFlow<List<Pair<Int, Int>>>(emptyList())
+    val positionOfHintWords: StateFlow<List<Pair<Int, Int>>> = _positionOfHintWords
 
     private val _wordListState = MutableStateFlow<List<String>>(emptyList())
     val wordListState: StateFlow<List<String>> = _wordListState
@@ -51,7 +50,7 @@ class WordGridViewModel : ViewModel() {
     private var startCell: Pair<Int, Int>? = null
     private var currentColorIndex = 0
     private var cellSizePx: Float = 0f
-        private set
+    private var revealedWordsByHint = mutableListOf<String>()
 
     fun updateCellSizePx(newSizePx: Float) {
         cellSizePx = newSizePx
@@ -84,7 +83,8 @@ class WordGridViewModel : ViewModel() {
             val selectedWord =
                 _selectedCells.value.map { (r, c) -> _gridState.value[r][c] }.joinToString("")
 
-            if (_wordListState.value.contains(selectedWord) &&
+            if (_wordListState.value.contains(selectedWord) ||
+                wordListState.value.contains(selectedWord.reversed()) &&
                 !_foundWords.value.contains(
                     selectedWord,
                 )
@@ -136,11 +136,6 @@ class WordGridViewModel : ViewModel() {
             val endOffset =
                 getCellCenter(row, col, cellSizePx)
 
-            Log.d(
-                "WordGrid",
-                " endOffset: $endOffset cellSizePx: $cellSizePx",
-            )
-
             _currentLine.value =
                 _currentLine.value?.copy(
                     offsets =
@@ -167,6 +162,10 @@ class WordGridViewModel : ViewModel() {
         _selectedLines.value = emptyList()
         _currentWord.value = ""
         _currentLine.value = null
+
+        // reset hints
+        revealedWordsByHint.clear()
+        _positionOfHintWords.value = emptyList()
     }
 
     private fun onWordFound(word: String) {
@@ -187,10 +186,20 @@ class WordGridViewModel : ViewModel() {
     }
 
     fun highlightFirstCharacter() {
-        val word = _wordListState.value.first { !_foundWords.value.contains(it) }
-
+        val word =
+            _wordListState.value.firstOrNull {
+                !_foundWords.value.contains(it) &&
+                    !revealedWordsByHint.contains(it)
+            }
+        if (word == null)
+            {
+                return
+            }
+        revealedWordsByHint.add(word)
         // Find the cell where the first character is located in the grid
         val position = findWordInGrid(grid = _gridState.value, word = word)
-        _positionOfHintWord.value = position
+        position?.let {
+            _positionOfHintWords.value += it
+        }
     }
 }
