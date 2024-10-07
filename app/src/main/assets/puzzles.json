@@ -5,9 +5,12 @@
       {
         "partId": 1,
         "words": [
-          "cat",
-          "mat",
-          "rat"
+          "table",
+          "chair",
+          "great",
+          "time",
+          "present",
+          "waste"
         ],
         "isCompleted": false
       },
@@ -16,7 +19,8 @@
         "words": [
           "kind",
           "love",
-          "respect"
+          "calm",
+          "patient"
         ],
         "isCompleted": false
       },
@@ -25,7 +29,7 @@
         "words": [
           "patient",
           "calm",
-          "perseverance"
+          "relax"
         ],
         "isCompleted": false
       }
@@ -38,8 +42,11 @@
         "partId": 1,
         "words": [
           "time",
-          "airplane",
-          "here"
+          "is",
+          "now",
+          "where",
+          "are",
+          "you"
         ],
         "isCompleted": false
       }

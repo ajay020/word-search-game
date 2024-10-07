@@ -134,4 +134,5 @@ fun LockedPuzzleDialog(
 @Preview(showBackground = true)
 @Composable
 private fun HomeScreenPreview() {
+
 }

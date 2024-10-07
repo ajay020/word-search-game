@@ -2,7 +2,6 @@
 
 package com.example.wordsearch.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -84,7 +84,6 @@ fun GameScreen(
     }
 
     Scaffold(
-        modifier = Modifier,
         topBar = {
             GameScreenTopBar(
                 title = "Game screen",
@@ -157,9 +156,9 @@ fun GameScreenContent(
     if (grid.isEmpty() || grid[0].isEmpty()) {
         Box(
             modifier =
-            Modifier
-                .background(Color.Blue.copy(red = 1f, green = 0.9f, blue = 0.2f))
-                .fillMaxSize(),
+                Modifier
+                    .background(Color.Blue.copy(red = 1f, green = 0.9f, blue = 0.2f))
+                    .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
             CircularProgressIndicator(
@@ -175,7 +174,7 @@ fun GameScreenContent(
             modifier
                 .fillMaxSize()
                 .background(Color.LightGray),
-        verticalArrangement = Arrangement.Top
+        verticalArrangement = Arrangement.Top,
     ) {
         if (grid.isNotEmpty()) {
             WordGrid(
@@ -220,8 +219,21 @@ fun GameScreenTopBar(
     onHintClick: () -> Unit,
 ) {
     TopAppBar(
+        modifier = Modifier.background(Color.Yellow.copy(alpha = 0.8f)),
+        colors =
+            TopAppBarColors(
+                containerColor = Color.Blue,
+                actionIconContentColor = Color.White,
+                navigationIconContentColor = Color.Black,
+                titleContentColor = Color.Black,
+                scrolledContainerColor = Color.Black,
+            ),
         title = {
-            Text(text = title, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+            Text(
+                text = title,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
+            )
         },
         navigationIcon = {
             IconButton(onClick = onCloseClick) {
@@ -267,13 +279,13 @@ private fun GameScreenPreview() {
             "you",
             "have",
             "is",
-            "now"
+            "now",
         )
     val puzzlePart = PuzzlePart(1, words)
 
     GameScreenContent(
         puzzlePart = puzzlePart,
-        grid = generateGrid( words)
+        grid = generateGrid(words),
     )
 //    ExitDialog(
 //        navigateToHomeScreen = {},
