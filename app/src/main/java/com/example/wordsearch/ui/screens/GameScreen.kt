@@ -13,6 +13,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -219,10 +224,10 @@ fun GameScreenTopBar(
     onHintClick: () -> Unit,
 ) {
     TopAppBar(
-        modifier = Modifier.background(Color.Yellow.copy(alpha = 0.8f)),
+        modifier = Modifier.background(Color.White.copy(alpha = 1f)),
         colors =
             TopAppBarColors(
-                containerColor = Color.Blue,
+                containerColor = Color.Transparent,
                 actionIconContentColor = Color.White,
                 navigationIconContentColor = Color.Black,
                 titleContentColor = Color.Black,
@@ -238,7 +243,7 @@ fun GameScreenTopBar(
         navigationIcon = {
             IconButton(onClick = onCloseClick) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_pause),
+                    Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Pause",
                 )
             }
@@ -246,7 +251,9 @@ fun GameScreenTopBar(
         actions = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(end = 16.dp),
+                modifier = Modifier
+                    .background(Color.Yellow, shape = RoundedCornerShape(16.dp))
+                    .padding(horizontal =  8.dp, vertical = 4.dp),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_monetization_on),
@@ -256,7 +263,8 @@ fun GameScreenTopBar(
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = coins.toString(),
-                    fontSize = 16.sp,
+                    fontSize = 14.sp,
+                    color = Color.Blue,
                 )
             }
             IconButton(onClick = onHintClick) {
@@ -270,7 +278,11 @@ fun GameScreenTopBar(
     )
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    widthDp = 360,
+//    heightDp = 619,
+)
 @Composable
 private fun GameScreenPreview() {
     val words =
@@ -291,10 +303,10 @@ private fun GameScreenPreview() {
 //        navigateToHomeScreen = {},
 //        onDismiss = {},
 //    )
-//    GameScreenTopBar(
-//        title = "Game screen",
-//        coins = 100,
-//        onCloseClick = {},
-//        onHintClick = {},
-//    )
+    GameScreenTopBar(
+        title = "Game screen",
+        coins = 100,
+        onCloseClick = {},
+        onHintClick = {},
+    )
 }

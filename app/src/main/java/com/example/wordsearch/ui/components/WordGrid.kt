@@ -2,16 +2,15 @@ package com.example.wordsearch.ui.components
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -76,18 +75,21 @@ fun WordGrid(
     // Use LocalConfiguration to get screen dimensions
     val configuration = LocalConfiguration.current
 //    val screenWidthDp = configuration.screenWidthDp.dp
-    val padding = 16.dp // for 8.dp padding on each side
+    val padding = 8.dp // for 8.dp padding on each side
 
     val screenWidthDp = configuration.screenWidthDp.dp
     val screenHeightDp = configuration.screenHeightDp.dp
 
-    Log.d(TAG, "screenWidth: $screenWidthDp screenHeight: ${configuration.screenHeightDp.dp}")
+    Log.d(TAG, "screenWidth: $screenWidthDp screenHeight: ${configuration.screenHeightDp}")
 
     // Recalculate cell size when the grid changes
     val cellSize by remember(grid) {
         derivedStateOf {
             val numColumns = grid.getOrNull(0)?.size ?: 1
-            minOf( (screenWidthDp - padding) / numColumns, 54.dp)
+            when {
+                screenWidthDp > 600.dp -> minOf((screenWidthDp - padding) / numColumns, 54.dp)
+                else -> (screenWidthDp - padding) / numColumns
+            }
         }
     }
 
@@ -106,19 +108,18 @@ fun WordGrid(
 
     Column(
         modifier =
-        Modifier
-            .fillMaxWidth()
-            .background(Color.Gray),
+            Modifier
+                .fillMaxWidth()
+                .background(Color.Gray),
         horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         WordList(
             modifier = Modifier.width(cellSize * grid[0].size),
             words = words,
-            textSize = textSize,
             foundWords = foundWords,
         )
         CurrentWord(currentWord = currentWord)
-        Spacer(modifier = Modifier.height(0.dp))
 
         if (grid.isNotEmpty()) {
             GridContainer(
@@ -147,14 +148,14 @@ fun GridContainer(
 ) {
     Box(
         modifier =
-        Modifier
-            .size(
-                gridData.cellSize * gridData.grid[0].size,
-                gridData.cellSize * gridData.grid.size,
-            )
-            .background(Color.White, shape = RoundedCornerShape(8.dp))
-            .drawLines(gridData.selectedLines, gridData.currentLine)
-            .handleGestures(viewModel),
+            Modifier
+                .size(
+                    gridData.cellSize * gridData.grid[0].size,
+                    gridData.cellSize * gridData.grid.size,
+                ).border(1.dp, Color.Red)
+                .background(Color.White, shape = RoundedCornerShape(8.dp))
+                .drawLines(gridData.selectedLines, gridData.currentLine)
+                .handleGestures(viewModel),
         contentAlignment = Alignment.Center,
     ) {
         GridDisplay(
@@ -175,23 +176,27 @@ fun GridDisplay(
     selectedCells: Set<Pair<Int, Int>>,
     positionOfHintWords: List<Pair<Int, Int>>,
 ) {
-
     Column(
         modifier =
-        Modifier
-            .fillMaxSize()
-            .background(Color.Transparent),
+            Modifier
+                .background(Color.Transparent),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         grid.forEachIndexed { rowIndex, row ->
-            Row {
+            Row(
+                modifier =
+                    Modifier
+//                    .border(1.dp, Color.Black)
+                        .fillMaxWidth(),
+            ) {
                 row.forEachIndexed { colIndex, letter ->
                     val isHintWord = positionOfHintWords.contains(rowIndex to colIndex)
 
                     Box(
                         modifier =
                             Modifier
+//                                .border(1.dp, Color.Black)
                                 .getBackground(isHintWord)
                                 .size(cellSize),
                         contentAlignment = Alignment.Center,
@@ -232,15 +237,16 @@ fun Modifier.drawLines(
 ): Modifier =
     drawBehind {
         selectedLines.forEach { line ->
-            drawLinePath(line.offsets, line.color)
+            drawLinePath(strokeWidth = 60f, line.offsets, line.color)
         }
 //         Drawing the currently dragged line (if needed)
         currentLine?.let {
-            drawLinePath(currentLine.offsets, currentLine.color)
+            drawLinePath(strokeWidth = 60f, currentLine.offsets, currentLine.color)
         }
     }
 
 fun DrawScope.drawLinePath(
+    strokeWidth: Float = 60f,
     points: List<Offset>,
     color: Color,
 ) {
@@ -254,7 +260,7 @@ fun DrawScope.drawLinePath(
     drawPath(
         path = path,
         color = color,
-        style = Stroke(width = 60f, cap = StrokeCap.Round),
+        style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
     )
 }
 
@@ -275,24 +281,28 @@ fun CurrentWord(
     Box(
         modifier =
             modifier
-                .height(50.dp)
-                .padding(8.dp),
+                .height(30.dp),
     ) {
-        if (currentWord.isEmpty()) return
-        Text(
-            modifier =
-                modifier
-                    .background(Color.Blue, shape = RoundedCornerShape(8.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-            text = currentWord,
-            style =
-                TextStyle(
-                    color = Color.White,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                ),
-        )
+        if (currentWord.isNotEmpty()) {
+            Text(
+                modifier =
+                    modifier
+                        .background(
+                            Color.White,
+                            shape = RoundedCornerShape(8.dp),
+                        ).padding(horizontal = 8.dp, vertical = 2.dp),
+                text = currentWord,
+                style =
+                    TextStyle(
+                        color = Color.Black,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp,
+                    ),
+            )
+        } else {
+            Spacer(modifier = Modifier.height(0.dp))
+        }
     }
 }
 
@@ -302,7 +312,6 @@ fun WordList(
     modifier: Modifier = Modifier,
     words: List<String>,
     foundWords: Set<String>,
-    textSize: TextUnit,
 ) {
     FlowRow(
         modifier =
@@ -321,7 +330,6 @@ fun WordList(
                 style =
                     TextStyle(
                         color = if (isFound) Color.Gray else Color.Black,
-                        fontSize = textSize,
                         fontWeight = FontWeight.Medium,
                         textDecoration = if (isFound) TextDecoration.LineThrough else TextDecoration.None,
                     ),
@@ -332,20 +340,14 @@ fun WordList(
 
 @Preview(
     showBackground = true,
-    widthDp = 720,
-    heightDp = 1280
+    widthDp = 360,
+    heightDp = 619,
 )
 @Composable
 private fun WordGridPreview() {
     val words =
         listOf(
-            "all",
-            "you",
-            "is",
-            "now",
-            "your",
-            "pres",
-            "now",
+          "MAT", "BAT", "CAT", "PAT", "POT", "NET"
         )
 
     val viewModel = WordGridViewModel()
@@ -361,4 +363,3 @@ private fun WordGridPreview() {
         wordList = words,
     )
 }
-

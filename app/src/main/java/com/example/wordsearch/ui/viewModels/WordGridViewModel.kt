@@ -1,5 +1,6 @@
 package com.example.wordsearch.ui.viewModels
 
+import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
@@ -8,7 +9,6 @@ import com.example.wordsearch.data.colors
 import com.example.wordsearch.utils.GridUtils.calculateSelectedCells
 import com.example.wordsearch.utils.GridUtils.findWordInGrid
 import com.example.wordsearch.utils.GridUtils.getCellCenter
-import com.example.wordsearch.utils.GridUtils.interpolatePoints
 import com.example.wordsearch.utils.GridUtils.isStraightLine
 import com.example.wordsearch.utils.GridUtils.offsetToGridCoordinate
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +18,6 @@ const val TAG = "WordViewModel"
 
 class WordGridViewModel : ViewModel() {
     private val availableColors = colors
-    private val interpolationSteps = 10
 
     private val _gridState = MutableStateFlow<List<List<Char>>>(emptyList())
     val gridState: StateFlow<List<List<Char>>> = _gridState
@@ -52,6 +51,9 @@ class WordGridViewModel : ViewModel() {
     private var cellSizePx: Float = 0f
     private var revealedWordsByHint = mutableListOf<String>()
 
+    private val hitboxTolerance =
+        cellSizePx / 2 // You can adjust this value for more or less tolerance
+
     fun updateCellSizePx(newSizePx: Float) {
         cellSizePx = newSizePx
     }
@@ -71,11 +73,53 @@ class WordGridViewModel : ViewModel() {
                 cellSizePx,
                 rowSize = _gridState.value.size,
                 colSize = _gridState.value[0].size,
+                hitboxTolerance,
             )
         startCell = row to col
         _selectedCells.value = setOf(row to col)
-        val line = Line(offsets = listOf(getCellCenter(row, col, cellSizePx)), color = getNextColor())
+
+        val line =
+            Line(offsets = listOf(getCellCenter(row, col, cellSizePx)), color = getNextColor())
         _currentLine.value = line
+    }
+
+    fun onDrag(offset: Offset) {
+        val (row, col) =
+            offsetToGridCoordinate(
+                offset,
+                cellSizePx,
+                rowSize = _gridState.value.size,
+                colSize = _gridState.value[0].size,
+                hitboxTolerance,
+            )
+        val newCell = row to col
+
+        Log.d("cell", "cell: $newCell, startcell: $startCell")
+
+        if (isStraightLine(startCell!!, newCell)) {
+            _selectedCells.value =
+                calculateSelectedCells(
+                    start = startCell!!,
+                    end = newCell,
+                    columnSize = _gridState.value[0].size,
+                    rowSize = _gridState.value.size,
+                )
+
+            _currentWord.value =
+                _selectedCells.value.map { (r, c) -> _gridState.value[r][c] }.joinToString("")
+
+            // Gather the centers of all selected cells
+            val selectedCenters =
+                _selectedCells.value.map { (r, c) ->
+                    getCellCenter(r, c, cellSizePx)
+                }
+
+            // Instead of interpolating for all points at once, we just pass the cell centers
+            _currentLine.value =
+                _currentLine.value?.copy(
+                    offsets = selectedCenters,
+                )
+        }
     }
 
     fun onDragEnd() {
@@ -100,52 +144,6 @@ class WordGridViewModel : ViewModel() {
             }
         }
         resetDragState()
-    }
-
-    fun onDrag(offset: Offset) {
-        val (row, col) =
-            offsetToGridCoordinate(
-                offset,
-                cellSizePx,
-                rowSize = _gridState.value.size,
-                colSize = _gridState.value[0].size,
-            )
-        val newCell = row to col
-
-        if (isStraightLine(startCell!!, newCell) &&
-            newCell.first < _gridState.value.size &&
-            newCell.second < _gridState.value[0].size
-        ) {
-            _selectedCells.value =
-                calculateSelectedCells(
-                    start = startCell!!,
-                    end = newCell,
-                    columnSize = _gridState.value[0].size,
-                    rowSize = _gridState.value.size,
-                )
-
-            _currentWord.value =
-                _selectedCells.value.map { (r, c) -> _gridState.value[r][c] }.joinToString("")
-
-            val startOffset =
-                getCellCenter(
-                    startCell!!.first,
-                    startCell!!.second,
-                    cellSizePx,
-                )
-            val endOffset =
-                getCellCenter(row, col, cellSizePx)
-
-            _currentLine.value =
-                _currentLine.value?.copy(
-                    offsets =
-                        interpolatePoints(
-                            startOffset,
-                            endOffset,
-                            interpolationSteps,
-                        ),
-                )
-        }
     }
 
     // Check if all words are found and mark the game as completed
@@ -191,10 +189,9 @@ class WordGridViewModel : ViewModel() {
                 !_foundWords.value.contains(it) &&
                     !revealedWordsByHint.contains(it)
             }
-        if (word == null)
-            {
-                return
-            }
+        if (word == null) {
+            return
+        }
         revealedWordsByHint.add(word)
         // Find the cell where the first character is located in the grid
         val position = findWordInGrid(grid = _gridState.value, word = word)

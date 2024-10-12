@@ -5,31 +5,63 @@
       {
         "partId": 1,
         "words": [
-          "table",
-          "chair",
-          "great",
-          "time",
-          "present",
-          "waste"
+          "TIME",
+          "LIFE",
+          "GIFT","JOY",
+          "ALIVE", "HEAL"
         ],
         "isCompleted": false
       },
       {
         "partId": 2,
         "words": [
-          "kind",
-          "love",
-          "calm",
-          "patient"
+          "RELAX",
+          "LIFE",
+          "GIVING",
+          "PEACE",
+          "NOW"
         ],
         "isCompleted": false
       },
       {
         "partId": 3,
         "words": [
-          "patient",
-          "calm",
-          "relax"
+          "KIND",
+          "LOVING",
+          "CALMING"
+        ],
+        "isCompleted": false
+      },
+      {
+        "partId": 4,
+        "words": [
+          "KINDNESS",
+          "LOVING",
+          "CALM"
+        ],
+        "isCompleted": false
+      },
+      {
+        "partId": 5,
+        "words": [
+          "PATIENT",
+          "BEPATIENT"
+        ],
+        "isCompleted": false
+      },
+      {
+        "partId": 6,
+        "words": [
+          "MOMENTARYO",
+          "ACCEPT"
+        ],
+        "isCompleted": false
+      },
+      {
+        "partId": 7,
+        "words": [
+          "PATIENT",
+          "RESPONSIBLE"
         ],
         "isCompleted": false
       }

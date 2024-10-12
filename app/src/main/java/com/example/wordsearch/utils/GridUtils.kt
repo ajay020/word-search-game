@@ -1,8 +1,6 @@
 package com.example.wordsearch.utils
 
-import android.util.Log
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.lerp
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.random.Random
@@ -17,6 +15,7 @@ enum class Direction {
 object GridUtils {
     // Minimum grid size
     private const val MIN_GRID_SIZE = 5
+    // Define a tolerance value that extends the hitbox around the cell center
 
     // Generate a random grid with words placed
     fun generateGrid(wordList: List<String>): List<MutableList<Char>> {
@@ -149,24 +148,21 @@ object GridUtils {
         cellSizePx: Float,
         rowSize: Int,
         colSize: Int,
+        hitboxTolerance: Float = 0f,
     ): Pair<Int, Int> {
         // Calculate the row and column based on the offset
-        val col = (offset.x / cellSizePx).toInt().coerceIn(0, colSize - 1)
-        val row = (offset.y / cellSizePx).toInt().coerceIn(0, rowSize - 1)
-        Log.d("WordGrid", "offset: $offset cellSizePx: $cellSizePx r: $row c: $col")
+        val row = ((offset.y + hitboxTolerance) / cellSizePx).toInt().coerceIn(0, rowSize - 1)
+        val col = ((offset.x + hitboxTolerance) / cellSizePx).toInt().coerceIn(0, colSize - 1)
+//        Log.d("WordGrid", "offset: $offset cellSizePx: $cellSizePx r: $row c: $col")
 
         return row to col
     }
 
-    // Function to generate a list of interpolated points between two offsets
-    fun interpolatePoints(
-        start: Offset,
-        end: Offset,
-        steps: Int,
-    ): List<Offset> =
-        List(steps) { step ->
-            lerp(start, end, step.toFloat() / (steps - 1))
-        }
+   fun interpolatePoints(start: Offset, end: Offset, steps: Int): List<Offset> {
+        val stepX = (end.x - start.x) / steps
+        val stepY = (end.y - start.y) / steps
+        return List(steps) { i -> Offset(start.x + stepX * i, start.y + stepY * i) }
+    }
 
     fun calculateSelectedCells(
         start: Pair<Int, Int>,
@@ -196,46 +192,13 @@ object GridUtils {
         return selectedCells
     }
 
-    fun interpolateCells(
-        start: Pair<Int, Int>,
-        end: Pair<Int, Int>,
-    ): List<Pair<Int, Int>> {
-        val cells = mutableListOf<Pair<Int, Int>>()
-
-        var x1 = start.second
-        var y1 = start.first
-        val x2 = end.second
-        val y2 = end.first
-
-        val dx = abs(x2 - x1)
-        val dy = abs(y2 - y1)
-        val sx = if (x1 < x2) 1 else -1
-        val sy = if (y1 < y2) 1 else -1
-        var err = dx - dy
-
-        while (true) {
-            cells.add(y1 to x1) // Add current cell
-            if (x1 == x2 && y1 == y2) break
-            val e2 = 2 * err
-            if (e2 > -dy) {
-                err -= dy
-                x1 += sx
-            }
-            if (e2 < dx) {
-                err += dx
-                y1 += sy
-            }
-        }
-
-        return cells
-    }
-
     // Function to calculate the center of a grid cell based on row, column, and cell size
     fun getCellCenter(
         row: Int,
         col: Int,
         cellSize: Float,
     ): Offset {
+        // Calculate the exact center of a cell, ensuring the line snaps to the center
         val x = col * cellSize + (cellSize / 2)
         val y = row * cellSize + (cellSize / 2)
         return Offset(x, y)
