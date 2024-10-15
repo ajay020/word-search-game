@@ -94,8 +94,6 @@ class WordGridViewModel : ViewModel() {
             )
         val newCell = row to col
 
-        Log.d("cell", "cell: $newCell, startcell: $startCell")
-
         if (isStraightLine(startCell!!, newCell)) {
             _selectedCells.value =
                 calculateSelectedCells(

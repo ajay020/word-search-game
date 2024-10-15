@@ -2,6 +2,7 @@
 
 package com.example.wordsearch.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,8 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Build
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,7 +48,7 @@ import com.example.wordsearch.R
 import com.example.wordsearch.data.Puzzle
 import com.example.wordsearch.data.PuzzlePart
 import com.example.wordsearch.ui.components.CongratsDialog
-import com.example.wordsearch.ui.components.WordGrid
+import com.example.wordsearch.ui.components.SearchGrid
 import com.example.wordsearch.ui.viewModels.GameViewModel
 import com.example.wordsearch.ui.viewModels.WordGridViewModel
 import com.example.wordsearch.utils.FileUtils.loadPuzzlesFromJson
@@ -67,6 +66,7 @@ fun GameScreen(
     val wordGridViewModal: WordGridViewModel = viewModel()
 
     val grid by gameViewModel.grid.collectAsState()
+    val isLoading by gameViewModel.isLoading
     val coins by gameViewModel.coins.collectAsState()
     var puzzle by remember { mutableStateOf<Puzzle?>(null) }
     var puzzleParts by remember { mutableStateOf<List<PuzzlePart>>(emptyList()) }
@@ -80,12 +80,14 @@ fun GameScreen(
             puzzleParts = it.parts
             gameViewModel.initCurrentPuzzlePartIndex(puzzleId)
         }
+        Log.d(TAG, "LE1 pid: $puzzleId")
     }
 
     LaunchedEffect(currentPuzzlePartIndex) {
         puzzleParts.getOrNull(currentPuzzlePartIndex)?.let {
             gameViewModel.initGrid(it.words)
         }
+        Log.d(TAG, "LE2 pid: $puzzleId $currentPuzzlePartIndex")
     }
 
     Scaffold(
@@ -102,7 +104,21 @@ fun GameScreen(
         },
     ) { innerPadding ->
 
-        if (puzzleParts.isNotEmpty() && currentPuzzlePartIndex < puzzleParts.size) {
+        if (isLoading) {
+            Box(
+                modifier =
+                Modifier
+                    .background(Color.Blue.copy(alpha = 0.5f))
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(50.dp),
+                    color = Color.Blue,
+                )
+            }
+        }
+        if (!isLoading && puzzleParts.isNotEmpty() && currentPuzzlePartIndex < puzzleParts.size) {
             GameScreenContent(
                 modifier = Modifier.padding(innerPadding),
                 puzzlePart = puzzleParts[currentPuzzlePartIndex],
@@ -158,34 +174,19 @@ fun GameScreenContent(
     puzzlePart: PuzzlePart,
     grid: List<List<Char>>,
 ) {
-    if (grid.isEmpty() || grid[0].isEmpty()) {
-        Box(
-            modifier =
-                Modifier
-                    .background(Color.Blue.copy(red = 1f, green = 0.9f, blue = 0.2f))
-                    .fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(50.dp),
-                color = Color.Blue,
-            )
-        }
-        return
-    }
-
     Column(
         modifier =
-            modifier
-                .fillMaxSize()
-                .background(Color.LightGray),
+        modifier
+            .fillMaxSize()
+            .background(Color.LightGray),
         verticalArrangement = Arrangement.Top,
     ) {
         if (grid.isNotEmpty()) {
-            WordGrid(
-                wordList = puzzlePart.words,
-                grid = grid,
-            )
+            SearchGrid(grid = grid, wordList = puzzlePart.words)
+//            WordGrid(
+//                wordList = puzzlePart.words,
+//                grid = grid,
+//            )
         }
     }
 }
@@ -251,9 +252,10 @@ fun GameScreenTopBar(
         actions = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
+                modifier =
+                Modifier
                     .background(Color.Yellow, shape = RoundedCornerShape(16.dp))
-                    .padding(horizontal =  8.dp, vertical = 4.dp),
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_monetization_on),

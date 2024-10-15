@@ -1,5 +1,6 @@
 package com.example.wordsearch.utils
 
+import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import kotlin.math.abs
 import kotlin.math.max
@@ -15,7 +16,6 @@ enum class Direction {
 object GridUtils {
     // Minimum grid size
     private const val MIN_GRID_SIZE = 5
-    // Define a tolerance value that extends the hitbox around the cell center
 
     // Generate a random grid with words placed
     fun generateGrid(wordList: List<String>): List<MutableList<Char>> {
@@ -26,14 +26,15 @@ object GridUtils {
         // Initialize the grid with empty characters
         val grid = MutableList(gridSize + 1) { MutableList(gridSize) { ' ' } }
 
-        // Place each word in the grid
-        wordList.forEach { word ->
-            placeWordInGrid(grid, word)
+        for (word in wordList) {
+            if (!placeWordInGrid(grid, word)) {
+                Log.e("GridGeneration", "Failed to place word: $word")
+                return generateGrid(wordList) // Retry the entire grid generation
+            }
         }
 
         // Fill remaining empty spaces with random letters
         fillEmptySpaces(grid)
-
         return grid
     }
 
@@ -42,9 +43,10 @@ object GridUtils {
     private fun placeWordInGrid(
         grid: MutableList<MutableList<Char>>,
         word: String,
-    ) {
-        var placed = false
-        while (!placed) {
+        maxAttempts: Int = 1000,
+    ): Boolean {
+        var attempts = 0
+        while (attempts < maxAttempts) {
             // Randomly pick a starting point and direction
             val startRow = Random.nextInt(grid.size)
             val startCol = Random.nextInt(grid[0].size)
@@ -53,9 +55,13 @@ object GridUtils {
             // Try to place the word in the chosen direction
             if (canPlaceWord(grid, word, startRow, startCol, direction)) {
                 placeWordAt(grid, word, startRow, startCol, direction)
-                placed = true
+                return true
+            } else {
+                Log.d("GameViewModel", "Word '$word' cannot be placed at ($startRow, $startCol), direction: $direction")
             }
+            attempts++
         }
+        return false
     }
 
     // Check if the word can be placed at the given position and direction
@@ -156,12 +162,6 @@ object GridUtils {
 //        Log.d("WordGrid", "offset: $offset cellSizePx: $cellSizePx r: $row c: $col")
 
         return row to col
-    }
-
-   fun interpolatePoints(start: Offset, end: Offset, steps: Int): List<Offset> {
-        val stepX = (end.x - start.x) / steps
-        val stepY = (end.y - start.y) / steps
-        return List(steps) { i -> Offset(start.x + stepX * i, start.y + stepY * i) }
     }
 
     fun calculateSelectedCells(

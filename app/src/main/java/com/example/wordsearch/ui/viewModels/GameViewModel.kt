@@ -1,16 +1,23 @@
 package com.example.wordsearch.ui.viewModels
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.wordsearch.WordSearchApplication
 import com.example.wordsearch.repository.PuzzleProgressRepository
 import com.example.wordsearch.utils.GridUtils.generateGrid
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.system.measureTimeMillis
 
 class GameViewModel(
     private val puzzleProgressRepository: PuzzleProgressRepository,
@@ -24,9 +31,27 @@ class GameViewModel(
     private val _availableHint = MutableStateFlow(3)
     val availableHint: StateFlow<Int> = _availableHint
 
+    private val _isLoading = mutableStateOf(true)
+    val isLoading: State<Boolean> = _isLoading
+
     fun initGrid(words: List<String>) {
-        _grid.value = generateGrid(words)
-        Log.d("GameViewModel", "Grid initialized: ${_grid.value}")
+        Log.d("GameViewModel", "init grid")
+        generateGridAsync(words)
+    }
+
+    private fun generateGridAsync(wordList: List<String>) {
+        viewModelScope.launch(Dispatchers.Default) {
+            _isLoading.value = true
+            val executionTime =
+                measureTimeMillis {
+                    _grid.value = generateGrid(wordList)
+                }
+            Log.d("GameViewModel", "Grid generation time: $executionTime ms")
+            withContext(Dispatchers.Main) {
+                _isLoading.value = false
+                // ...
+            }
+        }
     }
 
     fun initCurrentPuzzlePartIndex(puzzleId: Int) {

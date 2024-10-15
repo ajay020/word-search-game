@@ -1,5 +1,6 @@
 package com.example.wordsearch.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -145,6 +146,9 @@ fun HomeScreenContent(
             PuzzleSelectionScreen(
                 puzzleProgressList = puzzleProgressList,
                 onPuzzleClick = { puzzleId, isLocked ->
+
+                    Log.d("HomeScreen", "onPuzzleClick: puzzleId=$puzzleId, isLocked=$isLocked")
+
                     if (!isLocked) {
                         navigateToGameScreen(puzzleId)
                     } else {
