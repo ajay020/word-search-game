@@ -26,9 +26,9 @@ fun WordList(
     words: List<Word>
 ) {
     FlowRow(
-        modifier = modifier.padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier.padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
         maxItemsInEachRow = 3,
     ) {
         words.forEach{ word: Word ->
@@ -41,11 +41,7 @@ fun WordList(
 fun WordItem(word: Word) {
     Box(
         modifier = Modifier
-            .background(
-                color = if (word.found) Color.LightGray else Color.White,
-                shape = MaterialTheme.shapes.small
-            )
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 10.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center
     ) {
         Text(

@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:filename")
+
 package com.example.wordsearch.utils
 
 import com.example.wordsearch.data.Puzzle

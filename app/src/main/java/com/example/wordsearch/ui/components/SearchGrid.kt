@@ -2,20 +2,36 @@
 
 package com.example.wordsearch.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -29,54 +45,37 @@ import kotlin.math.sign
 
 @Composable
 fun SearchGrid(
-    grid: List<List<Char>>,
-    wordList: List<String>
+    grid: List<List<Char>> = emptyList(),
+    wordList: List<String> = emptyList(),
+    viewModel: SearchGridViewModel = viewModel(factory = SearchGridViewModel.Factory),
 ) {
-    val viewModel: SearchGridViewModel = viewModel()
-
-    // Set the words to find
-    LaunchedEffect(Unit) {
-        viewModel.setWords(wordList)
-        viewModel.initGrid(grid)
-    }
-
     Column(
         modifier =
-        Modifier
-            .fillMaxSize()
-            .background(Color.LightGray)
-            .padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            Modifier
+                .fillMaxSize()
+                .background(Color.LightGray),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Box(
             modifier =
-            Modifier
-                .weight(1f)
-                .border(2.dp, Color.Yellow)
-                .fillMaxWidth(),
+                Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .border(1.dp, Color.Yellow)
+                    .padding(0.dp),
             contentAlignment = Alignment.TopCenter,
         ) {
-            if(viewModel.grid.isNotEmpty()){
-                MainContent(
-                    modifier = Modifier.fillMaxSize(),
-                    viewModel = viewModel,
+            MainContent(
+                modifier = Modifier.fillMaxSize(),
+                viewModel = viewModel,
+            )
+
+            if (viewModel.showCompletionDialog) {
+                PuzzleCompletionDialog(
+                    onDismiss = { viewModel.onDismissDialog() },
+                    onNextPuzzle = { viewModel.loadNextPuzzle() },
                 )
-            }else{
-                Box {
-                    Text(text = "Loading...")
-                }
             }
-        }
-        // Placeholder for additional content (e.g., ads)
-        Box(
-            modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(50.dp)
-                .background(Color.Gray),
-        ) {
-            // Add your ad content here
-            Text(text = "Show ads here")
         }
     }
 }
@@ -89,7 +88,9 @@ fun MainContent(
     BoxWithConstraints(
         modifier =
             modifier
-                .background(Color.DarkGray),
+                .border(2.dp, Color.DarkGray)
+//                .wrapContentSize()
+                .background(Color.Cyan),
         contentAlignment = Alignment.Center,
     ) {
         val density = LocalDensity.current
@@ -98,27 +99,38 @@ fun MainContent(
 
         // Calculate cellSize based on available space and number of cells
         // Limit the maximum cell size to ensure the grid isn't too large on big screens
-        val maxCellSize = with(density) { 100.dp.toPx() }
-        val cellSize =
-            min(
-                min(maxWidth / viewModel.cols, maxHeight / viewModel.rows),
-                maxCellSize,
-            )
+        val maxCellSize = with(density) { 60.dp.toPx() }
 
-        val gridWidth = cellSize * viewModel.cols
-        val gridHeight = cellSize * viewModel.rows
+        val cellSize by remember(viewModel.grid.size) {
+            derivedStateOf {
+                min(
+                    maxWidth / viewModel.grid.size,
+                    maxHeight / viewModel.grid.size,
+                )
+            }
+        }
+
+        val rows = viewModel.grid.size
+        val cols = viewModel.grid.size
+
+        val gridWidth = cellSize * cols
+        val gridHeight = cellSize * rows
+
+        Log.d("SearchGrid", "cellSize: $cellSize ${maxWidth / cols} ${maxHeight / rows}")
+        Log.d("SearchGrid", "mWidth: $maxWidth mHeight:  $maxHeight")
+        Log.d("SearchGrid", "gridWidth: $gridWidth gridHeight:  $gridHeight")
 
         Column(
             modifier = Modifier.width(with(density) { gridWidth.toDp() }),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Word List
             WordList(
                 modifier =
                     Modifier
                         .width(gridWidth.dp)
-                        .background(Color.LightGray),
+                        .background(Color.White),
                 words = viewModel.words,
             )
 
@@ -139,18 +151,16 @@ fun MainContent(
                     modifier =
                         Modifier
                             .fillMaxSize()
-                            .border(2.dp, Color.Red),
+                            .border(1.dp, Color.Red),
                 ) {
+                    val rows = viewModel.grid.size
+                    val cols = viewModel.grid.size
+
                     // Draw grid
-                    for (i in 0 until viewModel.rows) {
-                        for (j in 0 until viewModel.cols) {
+                    for (i in 0 until rows) {
+                        for (j in 0 until cols) {
                             drawRect(
-                                color =
-                                    if (Pair(i, j) in viewModel.selectedCells) {
-                                        Color.LightGray
-                                    } else {
-                                        Color.White
-                                    },
+                                color = Color.White,
                                 topLeft = Offset(j * cellSize, i * cellSize),
                                 size =
                                     Size(
@@ -158,7 +168,49 @@ fun MainContent(
                                         cellSize,
                                     ),
                             )
+
+                            drawCircle(
+                                color =
+                                    if (Pair(i, j) in viewModel.positionOfHintWords) {
+                                        Color.Red
+                                    } else {
+                                        Color.Transparent
+                                    },
+                                center =
+                                    Offset(
+                                        j * cellSize + cellSize / 2,
+                                        i * cellSize + cellSize / 2,
+                                    ),
+                                radius = cellSize / 4,
+                            )
                         }
+                    }
+
+                    viewModel.foundWords.forEach { foundWord ->
+                        val path =
+                            Path().apply {
+                                val startCell = foundWord.cells.first()
+                                moveTo(
+                                    startCell.second * cellSize + cellSize / 2,
+                                    startCell.first * cellSize + cellSize / 2,
+                                )
+                                foundWord.cells.forEach { cell ->
+                                    lineTo(
+                                        cell.second * cellSize + cellSize / 2,
+                                        cell.first * cellSize + cellSize / 2,
+                                    )
+                                }
+                            }
+                        drawPath(
+                            path,
+                            color = foundWord.color,
+                            style =
+                                Stroke(
+                                    width = cellSize / 2,
+                                    cap = StrokeCap.Round,
+                                    join = StrokeJoin.Bevel,
+                                ),
+                        )
                     }
 
                     // Draw selection line and calculate selected cells
@@ -176,8 +228,8 @@ fun MainContent(
                                     startOffset,
                                     startOffset,
                                     direction,
-                                    viewModel.rows,
-                                    viewModel.cols,
+                                    rows,
+                                    cols,
                                     cellSize,
                                     strokeWidth,
                                 )
@@ -186,14 +238,14 @@ fun MainContent(
                                     startOffset,
                                     end,
                                     direction,
-                                    viewModel.rows,
-                                    viewModel.cols,
+                                    rows,
+                                    cols,
                                     cellSize,
                                     strokeWidth,
                                 )
 
                             drawLine(
-                                color = Color.Red.copy(alpha = 0.5f),
+                                color = viewModel.getCurrentLineColor(),
                                 start = constrainedStart,
                                 end = constrainedEnd,
                                 strokeWidth = strokeWidth,
@@ -204,8 +256,8 @@ fun MainContent(
                     }
 
                     // Draw letters
-                    for (i in 0 until viewModel.rows) {
-                        for (j in 0 until viewModel.cols) {
+                    for (i in 0 until rows) {
+                        for (j in 0 until cols) {
                             drawContext.canvas.nativeCanvas.drawText(
                                 viewModel.grid[i][j].toString(),
                                 j * cellSize + cellSize / 3,
@@ -227,6 +279,28 @@ fun MainContent(
             }
         }
     }
+}
+
+@Composable
+fun PuzzleCompletionDialog(
+    onDismiss: () -> Unit,
+    onNextPuzzle: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Congratulations!") },
+        text = { Text("You've completed the puzzle!") },
+        confirmButton = {
+            Button(onClick = onNextPuzzle) {
+                Text("Next Puzzle")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Close")
+            }
+        },
+    )
 }
 
 // Helper functions
@@ -278,18 +352,19 @@ enum class Direction { HORIZONTAL, VERTICAL, DIAGONAL }
 @Preview(
     showBackground = true,
     widthDp = 360,
-    heightDp =619,
+    heightDp = 619,
 )
 @Composable
 private fun WordSearchPreview() {
-    val grid = listOf(
-        listOf('A', 'C', 'T', 'X', 'X', 'X'),
-        listOf('X', 'B', 'A', 'T', 'X', 'X'),
-        listOf('X', 'X', 'C', 'A', 'T', 'X'),
-        listOf('X', 'X', 'X', 'D', 'O', 'G'),
-        listOf('X', 'X', 'X', 'X', 'X', 'X'),
-        listOf('X', 'X', 'X', 'X', 'X', 'X')
-    )
+    val grid =
+        listOf(
+            listOf('A', 'C', 'T', 'X', 'X'),
+            listOf('X', 'B', 'A', 'T', 'X'),
+            listOf('X', 'X', 'C', 'A', 'T'),
+            listOf('X', 'X', 'X', 'D', 'O'),
+            listOf('X', 'X', 'X', 'X', 'X'),
+            listOf('X', 'X', 'X', 'X', 'X'),
+        )
     val wordList =
         listOf(
             "ACT",
@@ -300,6 +375,6 @@ private fun WordSearchPreview() {
 
     SearchGrid(
         grid = grid,
-        wordList = wordList
+        wordList = wordList,
     )
 }

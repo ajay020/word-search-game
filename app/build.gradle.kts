@@ -1,11 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlinx-serialization")
 }
 
 android {
     namespace = "com.example.wordsearch"
     compileSdk = 34
+
+//    sourceSets.getByName("main") {
+//        java.srcDirs("src/main/kotlin/puzzleGenerator")
+//    }
 
     defaultConfig {
         applicationId = "com.example.wordsearch"
@@ -62,6 +67,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation("com.google.code.gson:gson:2.10.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

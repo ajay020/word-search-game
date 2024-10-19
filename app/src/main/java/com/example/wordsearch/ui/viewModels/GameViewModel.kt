@@ -26,7 +26,7 @@ class GameViewModel(
     val grid: StateFlow<List<List<Char>>> = _grid
     private val _currentPuzzlePartIndex = MutableStateFlow(0)
     val currentPuzzlePartIndex: StateFlow<Int> = _currentPuzzlePartIndex
-    private val _coins = MutableStateFlow(100)
+    private val _coins = MutableStateFlow(30)
     val coins: StateFlow<Int> = _coins
     private val _availableHint = MutableStateFlow(3)
     val availableHint: StateFlow<Int> = _availableHint

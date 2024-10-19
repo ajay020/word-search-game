@@ -1,8 +1,5 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package com.example.wordsearch.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,9 +45,8 @@ import com.example.wordsearch.R
 import com.example.wordsearch.data.Puzzle
 import com.example.wordsearch.data.PuzzlePart
 import com.example.wordsearch.ui.components.CongratsDialog
-import com.example.wordsearch.ui.components.SearchGrid
 import com.example.wordsearch.ui.viewModels.GameViewModel
-import com.example.wordsearch.ui.viewModels.WordGridViewModel
+import com.example.wordsearch.ui.viewModels.SearchGridViewModel
 import com.example.wordsearch.utils.FileUtils.loadPuzzlesFromJson
 import com.example.wordsearch.utils.GridUtils.generateGrid
 
@@ -63,14 +59,14 @@ fun GameScreen(
     gameViewModel: GameViewModel = viewModel(factory = GameViewModel.Factory),
 ) {
     val context = LocalContext.current
-    val wordGridViewModal: WordGridViewModel = viewModel()
+    val searchGridViewModel: SearchGridViewModel = viewModel()
 
     val grid by gameViewModel.grid.collectAsState()
     val isLoading by gameViewModel.isLoading
     val coins by gameViewModel.coins.collectAsState()
     var puzzle by remember { mutableStateOf<Puzzle?>(null) }
     var puzzleParts by remember { mutableStateOf<List<PuzzlePart>>(emptyList()) }
-    val isGameCompleted by wordGridViewModal.isGameCompleted.collectAsState()
+    val isGameCompleted = searchGridViewModel.isPuzzleCompleted
     val currentPuzzlePartIndex by gameViewModel.currentPuzzlePartIndex.collectAsState()
     var showExitDialog by remember { mutableStateOf(true) }
 
@@ -80,14 +76,12 @@ fun GameScreen(
             puzzleParts = it.parts
             gameViewModel.initCurrentPuzzlePartIndex(puzzleId)
         }
-        Log.d(TAG, "LE1 pid: $puzzleId")
     }
 
     LaunchedEffect(currentPuzzlePartIndex) {
         puzzleParts.getOrNull(currentPuzzlePartIndex)?.let {
             gameViewModel.initGrid(it.words)
         }
-        Log.d(TAG, "LE2 pid: $puzzleId $currentPuzzlePartIndex")
     }
 
     Scaffold(
@@ -98,7 +92,9 @@ fun GameScreen(
                 onCloseClick = { navigateToHomeScreen() },
                 onHintClick = {
                     gameViewModel.useHint()
-                    wordGridViewModal.highlightFirstCharacter()
+                    if (coins > 0) {
+                        searchGridViewModel.highlightFirstCharacter()
+                    }
                 },
             )
         },
@@ -107,9 +103,9 @@ fun GameScreen(
         if (isLoading) {
             Box(
                 modifier =
-                Modifier
-                    .background(Color.Blue.copy(alpha = 0.5f))
-                    .fillMaxSize(),
+                    Modifier
+                        .background(Color.Blue.copy(alpha = 0.5f))
+                        .fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator(
@@ -162,7 +158,7 @@ fun GameScreen(
             onNextGame = {
                 gameViewModel.onNextPuzzlePart()
                 // Reset the game state
-                wordGridViewModal.resetGameState()
+                searchGridViewModel.resetPuzzleState()
             },
         )
     }
@@ -176,18 +172,18 @@ fun GameScreenContent(
 ) {
     Column(
         modifier =
-        modifier
-            .fillMaxSize()
-            .background(Color.LightGray),
+            modifier
+                .fillMaxSize()
+                .background(Color.LightGray),
         verticalArrangement = Arrangement.Top,
     ) {
-        if (grid.isNotEmpty()) {
-            SearchGrid(grid = grid, wordList = puzzlePart.words)
-//            WordGrid(
-//                wordList = puzzlePart.words,
-//                grid = grid,
-//            )
-        }
+//        if (grid.isNotEmpty()) {
+//            SearchGrid(grid = grid, wordList = puzzlePart.words)
+        //            WordGrid(
+        //                wordList = puzzlePart.words,
+        //                grid = grid,
+        //            )
+//        }
     }
 }
 
@@ -253,9 +249,9 @@ fun GameScreenTopBar(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
-                Modifier
-                    .background(Color.Yellow, shape = RoundedCornerShape(16.dp))
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    Modifier
+                        .background(Color.Yellow, shape = RoundedCornerShape(16.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_monetization_on),
@@ -283,7 +279,7 @@ fun GameScreenTopBar(
 @Preview(
     showBackground = true,
     widthDp = 360,
-//    heightDp = 619,
+    heightDp = 619,
 )
 @Composable
 private fun GameScreenPreview() {
@@ -301,10 +297,10 @@ private fun GameScreenPreview() {
         puzzlePart = puzzlePart,
         grid = generateGrid(words),
     )
-//    ExitDialog(
-//        navigateToHomeScreen = {},
-//        onDismiss = {},
-//    )
+    //    ExitDialog(
+    //        navigateToHomeScreen = {},
+    //        onDismiss = {},
+    //    )
     GameScreenTopBar(
         title = "Game screen",
         coins = 100,
