@@ -2,7 +2,6 @@
 
 package com.example.wordsearch.ui.components
 
-import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -38,20 +38,19 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.wordsearch.ui.viewModels.SearchGridViewModel
+import com.example.wordsearch.viewModels.SearchGridViewModel
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.sign
 
 @Composable
 fun SearchGrid(
-    grid: List<List<Char>> = emptyList(),
-    wordList: List<String> = emptyList(),
+    modifier: Modifier,
     viewModel: SearchGridViewModel = viewModel(factory = SearchGridViewModel.Factory),
 ) {
     Column(
         modifier =
-            Modifier
+            modifier
                 .fillMaxSize()
                 .background(Color.LightGray),
         verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -89,7 +88,7 @@ fun MainContent(
         modifier =
             modifier
                 .border(2.dp, Color.DarkGray)
-//                .wrapContentSize()
+                .wrapContentSize()
                 .background(Color.Cyan),
         contentAlignment = Alignment.Center,
     ) {
@@ -99,7 +98,7 @@ fun MainContent(
 
         // Calculate cellSize based on available space and number of cells
         // Limit the maximum cell size to ensure the grid isn't too large on big screens
-        val maxCellSize = with(density) { 60.dp.toPx() }
+//        val maxCellSize = with(density) { 60.dp.toPx() }
 
         val cellSize by remember(viewModel.grid.size) {
             derivedStateOf {
@@ -116,9 +115,9 @@ fun MainContent(
         val gridWidth = cellSize * cols
         val gridHeight = cellSize * rows
 
-        Log.d("SearchGrid", "cellSize: $cellSize ${maxWidth / cols} ${maxHeight / rows}")
-        Log.d("SearchGrid", "mWidth: $maxWidth mHeight:  $maxHeight")
-        Log.d("SearchGrid", "gridWidth: $gridWidth gridHeight:  $gridHeight")
+//        Log.d("SearchGrid", "cellSize: $cellSize ${maxWidth / cols} ${maxHeight / rows}")
+//        Log.d("SearchGrid", "mWidth: $maxWidth mHeight:  $maxHeight")
+//        Log.d("SearchGrid", "gridWidth: $gridWidth gridHeight:  $gridHeight")
 
         Column(
             modifier = Modifier.width(with(density) { gridWidth.toDp() }),
@@ -153,9 +152,6 @@ fun MainContent(
                             .fillMaxSize()
                             .border(1.dp, Color.Red),
                 ) {
-                    val rows = viewModel.grid.size
-                    val cols = viewModel.grid.size
-
                     // Draw grid
                     for (i in 0 until rows) {
                         for (j in 0 until cols) {
@@ -363,7 +359,6 @@ private fun WordSearchPreview() {
             listOf('X', 'X', 'C', 'A', 'T'),
             listOf('X', 'X', 'X', 'D', 'O'),
             listOf('X', 'X', 'X', 'X', 'X'),
-            listOf('X', 'X', 'X', 'X', 'X'),
         )
     val wordList =
         listOf(
@@ -372,9 +367,4 @@ private fun WordSearchPreview() {
             "CAT",
             "DOG",
         )
-
-    SearchGrid(
-        grid = grid,
-        wordList = wordList,
-    )
 }

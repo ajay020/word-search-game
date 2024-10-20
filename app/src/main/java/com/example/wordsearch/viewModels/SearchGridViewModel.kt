@@ -1,4 +1,4 @@
-package com.example.wordsearch.ui.viewModels
+package com.example.wordsearch.viewModels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -25,7 +25,6 @@ class SearchGridViewModel(
     private val progressManager: PuzzleProgressManager,
 ) : ViewModel() {
     @Suppress("ktlint:standard:property-naming")
-    val TAG = "SearchGridViewModel"
     private val availableColors =
         listOf(
             Color.Red,

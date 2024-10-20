@@ -1,6 +1,5 @@
-package com.example.wordsearch.ui.viewModels
+package com.example.wordsearch.viewModels
 
-import android.util.Log
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel

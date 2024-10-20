@@ -1,4 +1,4 @@
-package com.example.wordsearch.ui.viewModels
+package com.example.wordsearch.viewModels
 
 import android.app.Application
 import android.media.MediaPlayer

@@ -49,9 +49,9 @@ import androidx.navigation.NavController
 import com.example.wordsearch.R
 import com.example.wordsearch.data.Puzzle
 import com.example.wordsearch.data.PuzzleProgress
-import com.example.wordsearch.ui.viewModels.HomeState
-import com.example.wordsearch.ui.viewModels.HomeViewModel
 import com.example.wordsearch.utils.FileUtils.loadPuzzlesFromJson
+import com.example.wordsearch.viewModels.HomeState
+import com.example.wordsearch.viewModels.HomeViewModel
 
 @Composable
 fun HomeScreen(

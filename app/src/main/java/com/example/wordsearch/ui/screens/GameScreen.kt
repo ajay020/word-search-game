@@ -45,10 +45,10 @@ import com.example.wordsearch.R
 import com.example.wordsearch.data.Puzzle
 import com.example.wordsearch.data.PuzzlePart
 import com.example.wordsearch.ui.components.CongratsDialog
-import com.example.wordsearch.ui.viewModels.GameViewModel
-import com.example.wordsearch.ui.viewModels.SearchGridViewModel
 import com.example.wordsearch.utils.FileUtils.loadPuzzlesFromJson
 import com.example.wordsearch.utils.GridUtils.generateGrid
+import com.example.wordsearch.viewModels.GameViewModel
+import com.example.wordsearch.viewModels.SearchGridViewModel
 
 const val TAG = "GameScreen"
 

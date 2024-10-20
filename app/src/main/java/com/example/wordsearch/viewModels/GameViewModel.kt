@@ -1,4 +1,4 @@
-package com.example.wordsearch.ui.viewModels
+package com.example.wordsearch.viewModels
 
 import android.util.Log
 import androidx.compose.runtime.State

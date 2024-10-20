@@ -1,4 +1,4 @@
-package com.example.wordsearch.ui.screens
+package com.example.wordsearch.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.padding

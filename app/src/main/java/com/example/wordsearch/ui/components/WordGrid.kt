@@ -48,8 +48,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wordsearch.data.GridContainerData
 import com.example.wordsearch.data.Line
-import com.example.wordsearch.ui.viewModels.WordGridViewModel
 import com.example.wordsearch.utils.GridUtils.generateGrid
+import com.example.wordsearch.viewModels.WordGridViewModel
 
 const val TAG = "WordGrid"
 
