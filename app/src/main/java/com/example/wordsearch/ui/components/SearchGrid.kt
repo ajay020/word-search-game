@@ -20,9 +20,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -38,6 +40,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wordsearch.viewModels.SearchGridState
 import com.example.wordsearch.viewModels.SearchGridViewModel
 import kotlin.math.abs
 import kotlin.math.min
@@ -48,6 +51,8 @@ fun SearchGrid(
     modifier: Modifier,
     viewModel: SearchGridViewModel = viewModel(factory = SearchGridViewModel.Factory),
 ) {
+    val uiState = viewModel.uiState.value
+
     Column(
         modifier =
             modifier
@@ -66,10 +71,11 @@ fun SearchGrid(
         ) {
             MainContent(
                 modifier = Modifier.fillMaxSize(),
+                uiState = uiState,
                 viewModel = viewModel,
             )
 
-            if (viewModel.showCompletionDialog) {
+            if (uiState.showCompletionDialog) {
                 PuzzleCompletionDialog(
                     onDismiss = { viewModel.onDismissDialog() },
                     onNextPuzzle = { viewModel.loadNextPuzzle() },
@@ -82,6 +88,7 @@ fun SearchGrid(
 @Composable
 fun MainContent(
     modifier: Modifier = Modifier,
+    uiState: SearchGridState,
     viewModel: SearchGridViewModel,
 ) {
     BoxWithConstraints(
@@ -100,24 +107,22 @@ fun MainContent(
         // Limit the maximum cell size to ensure the grid isn't too large on big screens
 //        val maxCellSize = with(density) { 60.dp.toPx() }
 
-        val cellSize by remember(viewModel.grid.size) {
-            derivedStateOf {
+        // Use mutableStateOf for cellSize so it triggers recomposition when it changes
+        var cellSize by remember { mutableFloatStateOf(with(density) { 60.dp.toPx() }) }
+
+        LaunchedEffect(uiState.grid.size, maxWidth, maxHeight) {
+            cellSize =
                 min(
-                    maxWidth / viewModel.grid.size,
-                    maxHeight / viewModel.grid.size,
+                    maxWidth / uiState.grid.size,
+                    maxHeight / uiState.grid.size,
                 )
-            }
         }
 
-        val rows = viewModel.grid.size
-        val cols = viewModel.grid.size
+        val rows = uiState.grid.size
+        val cols = uiState.grid.size
 
         val gridWidth = cellSize * cols
         val gridHeight = cellSize * rows
-
-//        Log.d("SearchGrid", "cellSize: $cellSize ${maxWidth / cols} ${maxHeight / rows}")
-//        Log.d("SearchGrid", "mWidth: $maxWidth mHeight:  $maxHeight")
-//        Log.d("SearchGrid", "gridWidth: $gridWidth gridHeight:  $gridHeight")
 
         Column(
             modifier = Modifier.width(with(density) { gridWidth.toDp() }),
@@ -130,7 +135,7 @@ fun MainContent(
                     Modifier
                         .width(gridWidth.dp)
                         .background(Color.White),
-                words = viewModel.words,
+                words = uiState.words,
             )
 
             Box(
@@ -167,7 +172,7 @@ fun MainContent(
 
                             drawCircle(
                                 color =
-                                    if (Pair(i, j) in viewModel.positionOfHintWords) {
+                                    if (Pair(i, j) in uiState.positionOfHintWords) {
                                         Color.Red
                                     } else {
                                         Color.Transparent
@@ -182,7 +187,8 @@ fun MainContent(
                         }
                     }
 
-                    viewModel.foundWords.forEach { foundWord ->
+                    // Draw lines for previously words
+                    uiState.foundWords.forEach { foundWord ->
                         val path =
                             Path().apply {
                                 val startCell = foundWord.cells.first()
@@ -210,8 +216,8 @@ fun MainContent(
                     }
 
                     // Draw selection line and calculate selected cells
-                    viewModel.startCell?.let { start ->
-                        viewModel.currentDragPosition?.let { end ->
+                    uiState.startCell?.let { start ->
+                        uiState.currentDragPosition?.let { end ->
                             val startOffset =
                                 Offset(
                                     start.second * cellSize + cellSize / 2,
@@ -255,12 +261,12 @@ fun MainContent(
                     for (i in 0 until rows) {
                         for (j in 0 until cols) {
                             drawContext.canvas.nativeCanvas.drawText(
-                                viewModel.grid[i][j].toString(),
+                                uiState.grid[i][j].toString(),
                                 j * cellSize + cellSize / 3,
                                 i * cellSize + 2 * cellSize / 3,
                                 android.graphics.Paint().apply {
                                     color =
-                                        if (Pair(i, j) in viewModel.selectedCells
+                                        if (Pair(i, j) in uiState.selectedCells
                                         ) {
                                             android.graphics.Color.WHITE
                                         } else {

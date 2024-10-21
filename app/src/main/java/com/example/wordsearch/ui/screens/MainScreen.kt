@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wordsearch.viewModels.SearchGridState
 import com.example.wordsearch.viewModels.SearchGridViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -21,8 +22,10 @@ fun MainScreen(
     navigateToGameScreen: (Int) -> Unit,
     viewModel: SearchGridViewModel = viewModel(factory = SearchGridViewModel.Factory),
 ) {
+    val searchGridUiState = viewModel.uiState.value
     MainScreenContent(
         viewModel = viewModel,
+        searchGridUiState = searchGridUiState,
         navigateToGameScreen = navigateToGameScreen,
     )
 }
@@ -32,6 +35,7 @@ fun MainScreenContent(
     modifier: Modifier = Modifier,
     viewModel: SearchGridViewModel,
     navigateToGameScreen: (Int) -> Unit,
+    searchGridUiState: SearchGridState,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -39,19 +43,19 @@ fun MainScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Current Puzzle: Level ${viewModel.currentLevel + 1}",
+            text = "Current Puzzle: Level ${searchGridUiState.currentLevel + 1}",
         )
 
         Button(
-            onClick = { navigateToGameScreen(viewModel.currentLevel) },
+            onClick = { navigateToGameScreen(searchGridUiState.currentLevel) },
             modifier = Modifier.padding(top = 16.dp),
         ) {
-            Text(text = "Start Level ${viewModel.currentLevel + 1}")
+            Text(text = "Start Level ${searchGridUiState.currentLevel + 1}")
         }
 
-        if (viewModel.currentLevel > 0) {
+        if (searchGridUiState.currentLevel > 0) {
             Text(
-                text = "Puzzles Solved: ${viewModel.currentLevel}",
+                text = "Puzzles Solved: ${searchGridUiState.currentLevel}",
                 modifier = Modifier.padding(top = 16.dp),
             )
         }

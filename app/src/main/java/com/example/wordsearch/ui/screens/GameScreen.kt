@@ -66,7 +66,7 @@ fun GameScreen(
     val coins by gameViewModel.coins.collectAsState()
     var puzzle by remember { mutableStateOf<Puzzle?>(null) }
     var puzzleParts by remember { mutableStateOf<List<PuzzlePart>>(emptyList()) }
-    val isGameCompleted = searchGridViewModel.isPuzzleCompleted
+    val isGameCompleted = searchGridViewModel.uiState.value.isPuzzleCompleted
     val currentPuzzlePartIndex by gameViewModel.currentPuzzlePartIndex.collectAsState()
     var showExitDialog by remember { mutableStateOf(true) }
 

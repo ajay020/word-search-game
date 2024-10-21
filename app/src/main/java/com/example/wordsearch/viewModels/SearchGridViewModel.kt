@@ -1,17 +1,20 @@
 package com.example.wordsearch.viewModels
 
+import android.app.Application
+import android.media.SoundPool
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.wordsearch.R
 import com.example.wordsearch.WordSearchApplication
 import com.example.wordsearch.repository.Puzzle
 import com.example.wordsearch.repository.PuzzleRepository
@@ -23,8 +26,8 @@ import kotlin.math.abs
 class SearchGridViewModel(
     val puzzleRepository: PuzzleRepository,
     private val progressManager: PuzzleProgressManager,
-) : ViewModel() {
-    @Suppress("ktlint:standard:property-naming")
+    application: Application,
+) : AndroidViewModel(application) {
     private val availableColors =
         listOf(
             Color.Red,
@@ -38,211 +41,259 @@ class SearchGridViewModel(
             Color(0xFF008080),
         )
 
-    // List of words to find
-    private val _words = mutableStateListOf<Word>()
-    val words: List<Word> = _words
+    private val _uiState = mutableStateOf(SearchGridState())
+    val uiState: State<SearchGridState> = _uiState
 
-    // Grid state variable
-    var grid by mutableStateOf(emptyList<List<Char>>())
-        private set
-
-    var selectedCells by mutableStateOf(listOf<Pair<Int, Int>>())
-        private set
-
-    var startCell by mutableStateOf<Pair<Int, Int>?>(null)
-        private set
-
-    var endCell by mutableStateOf<Pair<Int, Int>?>(null)
-        private set
-
-    var currentDragPosition by mutableStateOf<Offset?>(null)
-        private set
-
-    private val _foundWords = mutableStateListOf<FoundWord>()
-    val foundWords: List<FoundWord> = _foundWords
-
-    var isPuzzleCompleted by mutableStateOf(false)
-        private set
-
-    var showCompletionDialog by mutableStateOf(false)
-        private set
-
-    private val _positionOfHintWords = mutableStateListOf<Pair<Int, Int>>()
-    val positionOfHintWords: List<Pair<Int, Int>> = _positionOfHintWords
-
-    private var currentColorIdx = 0
-    private val revealedWordsByHint = mutableListOf<Word>()
-
-    var currentLevel by mutableStateOf(0)
-        private set
-
-    var totalLevels by mutableStateOf(0)
-        private set
-
-    private var currentPuzzle by mutableStateOf<Puzzle?>(null)
-        private set
+    private val soundPool: SoundPool = SoundPool.Builder().setMaxStreams(1).build()
+    private var cellEnterSound: Int = 0
+    private var wordMatchSound: Int = 0
+    private var lastPlayedCell: Pair<Int, Int>? = null
+    private var lastSoundPlayedTime = 0L
+    private val soundPlayInterval = 100L //
 
     init {
+        cellEnterSound = soundPool.load(getApplication(), R.raw.click, 1)
+        wordMatchSound = soundPool.load(getApplication(), R.raw.crank, 1)
+
         // Load the puzzles when the ViewModel is initialized
         viewModelScope.launch {
             puzzleRepository.loadPuzzles()
-            totalLevels = puzzleRepository.getTotalPuzzles()
+            _uiState.value = _uiState.value.copy(totalLevels = puzzleRepository.getTotalPuzzles())
             // Load the saved progress from SharedPreferences
-            currentLevel = progressManager.getCurrentLevel()
-            loadPuzzle(currentLevel)
+            _uiState.value = _uiState.value.copy(currentLevel = progressManager.getCurrentLevel())
+            loadPuzzle(_uiState.value.currentLevel)
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        soundPool.release() // Release resources
+    }
+
     private fun loadPuzzle(level: Int) {
-        currentPuzzle = puzzleRepository.getPuzzleByIndex(level)
-        currentPuzzle?.let {
-            grid = currentPuzzle!!.grid
-            setWords(currentPuzzle!!.words)
+        val puzzle = puzzleRepository.getPuzzleByIndex(level)
+        puzzle?.let {
+            _uiState.value =
+                _uiState.value.copy(
+                    grid = puzzle.grid,
+                    currentPuzzle = puzzle,
+                )
+            setWords(puzzle.words)
         }
     }
 
     private fun markPuzzleAsSolved() {
         // Increment the level after solving and save the progress
-        currentLevel++
-        progressManager.saveCurrentLevel(currentLevel)
+        val nextLevel = _uiState.value.currentLevel + 1
+        _uiState.value = _uiState.value.copy(currentLevel = nextLevel)
+        progressManager.saveCurrentLevel(nextLevel)
 
-        if (currentLevel < totalLevels) {
-            loadPuzzle(currentLevel)
+        if (nextLevel < _uiState.value.totalLevels) {
+            loadPuzzle(nextLevel)
         }
     }
 
     fun loadNextPuzzle() {
-        showCompletionDialog = false
+        _uiState.value = _uiState.value.copy(showCompletionDialog = false)
         markPuzzleAsSolved()
         resetPuzzleState()
     }
 
     private fun onPuzzleCompleted() {
-        showCompletionDialog = true
-        isPuzzleCompleted = true
+        _uiState.value = _uiState.value.copy(showCompletionDialog = true, isPuzzleCompleted = true)
     }
 
     fun onDismissDialog() {
-        showCompletionDialog = false
+        _uiState.value = _uiState.value.copy(showCompletionDialog = false)
     }
 
     private fun setWords(wordList: List<String>) {
-        _words.clear()
-        _words.addAll(wordList.map { Word(it, false) })
+        _uiState.value =
+            _uiState.value.copy(
+                words = wordList.map { Word(it, false) },
+            )
     }
 
     fun onDragStart(
         offset: Offset,
         cellSize: Float,
     ) {
-        startCell =
+        val startCell =
             Pair(
                 (offset.y / cellSize).toInt(),
                 (offset.x / cellSize).toInt(),
             )
 
-        endCell = startCell
-        currentDragPosition = offset
-        selectedCells = listOf(startCell!!)
+        _uiState.value =
+            _uiState.value.copy(
+                startCell = startCell,
+                endCell = startCell,
+                currentDragPosition = offset,
+                selectedCells = listOf(startCell),
+            )
+
+        lastPlayedCell = startCell
+        playCellEnterSound()
     }
 
     fun onDragEnd() {
-        val selectedWord = getSelectedWord()
-
-        selectedWord.let {
-            val isMatched =
-                _words.any {
-                    !it.found && (it.text == selectedWord || it.text == selectedWord.reversed())
-                }
-
-//            Log.d("SearchGridViewModel", "Selected Word: $selectedWord")
-//            Log.d("SearchGridViewModel", "Is Matched: $isMatched")
-//            Log.d("SearchGridViewModel", "selectedCells: $selectedCells")
-
-            if (isMatched) {
-                onWordFound(selectedWord)
-            }
+        // Reset lastPlayedCells when drag ends
+        lastPlayedCell = null
+        if (!isWordMatched()) {
+            resetGridStates()
         }
-
-        resetGridStates()
     }
 
     fun onDrag(offset: Offset) {
-        currentDragPosition = offset
+        _uiState.value = _uiState.value.copy(currentDragPosition = offset)
+    }
+
+    private fun playCellEnterSound() {
+        soundPool.play(cellEnterSound, 1f, 1f, 0, 0, 2f)
+    }
+
+    private fun playWordMatchedSound() {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lastSoundPlayedTime >= soundPlayInterval) {
+            soundPool.play(wordMatchSound, 1f, 1f, 0, 0, 1f)
+            lastSoundPlayedTime = currentTime
+        }
+    }
+
+    private fun isWordMatched(): Boolean {
+        val selectedWord = getSelectedWord()
+        val isMatched =
+            _uiState.value.words.any {
+                !it.found && (it.text == selectedWord || it.text == selectedWord.reversed())
+            }
+        return isMatched
+    }
+
+    private fun checkIfWordFound() {
+        val selectedWord = getSelectedWord()
+        if (isWordMatched()) {
+            playWordMatchedSound()
+            onWordFound(selectedWord)
+            resetGridStates()
+        }
     }
 
     private fun resetGridStates() {
-        startCell = null
-        endCell = null
-        currentDragPosition = null
-        selectedCells = emptyList()
+        _uiState.value =
+            _uiState.value.copy(
+                startCell = null,
+                endCell = null,
+                currentDragPosition = null,
+                selectedCells = emptyList(),
+            )
+    }
+
+    // Update selected cells and check if a word is found
+    fun updateSelectedCells(
+        constrainedEnd: Offset,
+        cellSize: Float,
+    ) {
+        val endCell =
+            Pair(
+                (constrainedEnd.y / cellSize).toInt(),
+                (constrainedEnd.x / cellSize).toInt(),
+            )
+        val selectedCells =
+            getSelectedCells(
+                _uiState.value.startCell!!,
+                endCell,
+                rows = _uiState.value.grid.size,
+                cols = _uiState.value.grid.size,
+            )
+
+        _uiState.value =
+            _uiState.value.copy(
+                endCell = endCell,
+                selectedCells = selectedCells,
+            )
+
+        // Play sound if we've entered a new cell
+        if (endCell != lastPlayedCell) {
+            lastPlayedCell = endCell
+            playCellEnterSound()
+            // Check if the word is found
+            checkIfWordFound()
+        }
     }
 
     fun resetPuzzleState() {
-        currentColorIdx = 0
-        isPuzzleCompleted = false
-        _foundWords.clear()
-        _positionOfHintWords.clear()
-        revealedWordsByHint.clear()
+        _uiState.value =
+            _uiState.value.copy(
+                currentColorIdx = 0,
+                isPuzzleCompleted = false,
+                foundWords = emptyList(),
+                positionOfHintWords = emptyList(),
+                revealedWordsByHint = emptyList(),
+            )
         resetGridStates()
     }
 
-    private fun checkIfPuzzleCompleted() {
-        if (_words.all { it.found }) {
-            onPuzzleCompleted()
+    private fun getSelectedWord(): String =
+        _uiState.value.selectedCells
+            .map { _uiState.value.grid[it.first][it.second] }
+            .joinToString("")
+
+    private fun markWordAsFound(word: String) {
+        val words = _uiState.value.words.toMutableList()
+        val index =
+            _uiState.value.words.indexOfFirst { it.text == word || it.text == word.reversed() }
+        if (index != -1) {
+            words[index] = words[index].copy(found = true)
+            _uiState.value =
+                _uiState.value.copy(
+                    words = words,
+                    foundWords =
+                        _uiState.value.foundWords +
+                            FoundWord(
+                                word,
+                                getCurrentLineColor(),
+                                _uiState.value.selectedCells.toList(),
+                            ),
+                )
         }
     }
 
     private fun onWordFound(selectedWord: String) {
         markWordAsFound(selectedWord)
-        currentColorIdx++
         checkIfPuzzleCompleted()
+        _uiState.value =
+            _uiState.value.copy(
+                currentColorIdx = _uiState.value.currentColorIdx + 1,
+            )
     }
 
-    fun getCurrentLineColor(): Color = availableColors[currentColorIdx % availableColors.size]
-
-    fun updateSelectedCells(
-        constrainedEnd: Offset,
-        cellSize: Float,
-    ) {
-        endCell =
-            Pair(
-                (constrainedEnd.y / cellSize).toInt(),
-                (constrainedEnd.x / cellSize).toInt(),
-            )
-        selectedCells = getSelectedCells(startCell!!, endCell!!, grid.size, grid.size)
+    fun getCurrentLineColor(): Color {
+        val currentColorIdx = _uiState.value.currentColorIdx
+        return availableColors[currentColorIdx % availableColors.size]
     }
 
-    private fun getSelectedWord(): String = selectedCells.map { grid[it.first][it.second] }.joinToString("")
-
-    private fun markWordAsFound(word: String) {
-        val index = _words.indexOfFirst { it.text == word || it.text == word.reversed() }
-        if (index != -1) {
-            _words[index] = _words[index].copy(found = true)
-            _foundWords.add(
-                FoundWord(
-                    word,
-                    getCurrentLineColor(),
-                    selectedCells.toList(),
-                ),
-            )
+    private fun checkIfPuzzleCompleted() {
+        if (_uiState.value.words.all { it.found }) {
+            onPuzzleCompleted()
         }
     }
 
     fun highlightFirstCharacter() {
         val word =
-            _words.firstOrNull { w ->
-                !foundWords.any { it.text == w.text } && !revealedWordsByHint.any { it.text == w.text }
+            _uiState.value.words.firstOrNull { w ->
+                !_uiState.value.foundWords.any { it.text == w.text } &&
+                    !_uiState.value.revealedWordsByHint.any { it.text == w.text }
             }
 
-        if (word == null) {
-            return
-        }
-        revealedWordsByHint.add(word)
-        // Find the cell where the first character is located in the grid
-        val position = findWordInGrid(grid = grid, word = word.text)
-        position?.let {
-            _positionOfHintWords.add(position)
+        word?.let { selectedWord ->
+            val position = findWordInGrid(grid = _uiState.value.grid, word = selectedWord.text)
+            position?.let {
+                _uiState.value =
+                    _uiState.value.copy(
+                        revealedWordsByHint = _uiState.value.revealedWordsByHint + selectedWord,
+                        positionOfHintWords = _uiState.value.positionOfHintWords + position,
+                    )
+            }
         }
     }
 
@@ -295,6 +346,7 @@ class SearchGridViewModel(
                     SearchGridViewModel(
                         puzzleRepository = application.container.puzzleRepository,
                         progressManager = application.container.puzzleProgressManager,
+                        application,
                     )
                 }
             }
@@ -311,4 +363,22 @@ data class FoundWord(
     val text: String,
     val color: Color,
     val cells: List<Pair<Int, Int>>,
+)
+
+data class SearchGridState(
+    val grid: List<List<Char>> = emptyList(),
+    val selectedCells: List<Pair<Int, Int>> = emptyList(),
+    val startCell: Pair<Int, Int>? = null,
+    val endCell: Pair<Int, Int>? = null,
+    val currentDragPosition: Offset? = null,
+    val foundWords: List<FoundWord> = emptyList(),
+    val isPuzzleCompleted: Boolean = false,
+    val showCompletionDialog: Boolean = false,
+    val positionOfHintWords: List<Pair<Int, Int>> = emptyList(),
+    val currentLevel: Int = 0,
+    val totalLevels: Int = 0,
+    val currentPuzzle: Puzzle? = null,
+    val words: List<Word> = emptyList(), // List of words to find
+    val currentColorIdx: Int = 0, // Current color index for lines
+    val revealedWordsByHint: List<Word> = emptyList(), // Words revealed by hints
 )
