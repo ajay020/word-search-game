@@ -285,6 +285,7 @@ fun MainContent(
 
 @Composable
 fun PuzzleCompletionDialog(
+    modifier: Modifier = Modifier,
     onDismiss: () -> Unit,
     onNextPuzzle: () -> Unit,
 ) {

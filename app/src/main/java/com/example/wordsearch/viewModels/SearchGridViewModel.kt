@@ -49,7 +49,7 @@ class SearchGridViewModel(
     private var wordMatchSound: Int = 0
     private var lastPlayedCell: Pair<Int, Int>? = null
     private var lastSoundPlayedTime = 0L
-    private val soundPlayInterval = 100L //
+    private val soundPlayInterval = 100L
 
     init {
         cellEnterSound = soundPool.load(getApplication(), R.raw.click, 1)
