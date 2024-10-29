@@ -20,12 +20,14 @@ import com.example.wordsearch.repository.Puzzle
 import com.example.wordsearch.repository.PuzzleRepository
 import com.example.wordsearch.utils.GridUtils.findWordInGrid
 import com.example.wordsearch.utils.PuzzleProgressManager
+import com.example.wordsearch.utils.SoundSettingsManager
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 class SearchGridViewModel(
     val puzzleRepository: PuzzleRepository,
     private val progressManager: PuzzleProgressManager,
+    private val soundSettingsManager: SoundSettingsManager,
     application: Application,
 ) : AndroidViewModel(application) {
     private val availableColors =
@@ -63,6 +65,8 @@ class SearchGridViewModel(
             _uiState.value = _uiState.value.copy(currentLevel = progressManager.getCurrentLevel())
             loadPuzzle(_uiState.value.currentLevel)
         }
+        // Load sound setting on initialization
+        _uiState.value = _uiState.value.copy(isSoundEnabled = soundSettingsManager.isSoundEnabled())
     }
 
     override fun onCleared() {
@@ -80,6 +84,12 @@ class SearchGridViewModel(
                 )
             setWords(puzzle.words)
         }
+    }
+
+    fun toggleSound() {
+        val newSoundEnabled = !_uiState.value.isSoundEnabled
+        _uiState.value = _uiState.value.copy(isSoundEnabled = newSoundEnabled)
+        soundSettingsManager.saveSoundEnabled(newSoundEnabled) // Save the setting
     }
 
     private fun markPuzzleAsSolved() {
@@ -149,14 +159,25 @@ class SearchGridViewModel(
     }
 
     private fun playCellEnterSound() {
-        soundPool.play(cellEnterSound, 1f, 1f, 0, 0, 2f)
+        if (_uiState.value.isSoundEnabled) {
+            soundPool.play(
+                cellEnterSound,
+                1f,
+                1f,
+                0,
+                0,
+                2f,
+            )
+        }
     }
 
     private fun playWordMatchedSound() {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - lastSoundPlayedTime >= soundPlayInterval) {
-            soundPool.play(wordMatchSound, 1f, 1f, 0, 0, 1f)
-            lastSoundPlayedTime = currentTime
+        if (_uiState.value.isSoundEnabled) {
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastSoundPlayedTime >= soundPlayInterval) {
+                soundPool.play(wordMatchSound, 1f, 1f, 0, 0, 1f)
+                lastSoundPlayedTime = currentTime
+            }
         }
     }
 
@@ -346,6 +367,7 @@ class SearchGridViewModel(
                     SearchGridViewModel(
                         puzzleRepository = application.container.puzzleRepository,
                         progressManager = application.container.puzzleProgressManager,
+                        soundSettingsManager = application.container.soundSettingsManager,
                         application,
                     )
                 }
@@ -377,6 +399,7 @@ data class SearchGridState(
     val positionOfHintWords: List<Pair<Int, Int>> = emptyList(),
     val currentLevel: Int = 0,
     val totalLevels: Int = 0,
+    val isSoundEnabled: Boolean = true,
     val currentPuzzle: Puzzle? = null,
     val words: List<Word> = emptyList(), // List of words to find
     val currentColorIdx: Int = 0, // Current color index for lines

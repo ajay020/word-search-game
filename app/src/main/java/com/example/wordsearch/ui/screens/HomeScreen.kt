@@ -113,7 +113,7 @@ fun HomeScreen(
     }
 
     if (showDialog) {
-        SettingsDialog(
+        SettingsDialog2(
             onDismiss = { showDialog = false },
             onSoundToggle = { homeViewModel.toggleSound() },
             onMusicToggle = { homeViewModel.toggleMusic() },
@@ -231,7 +231,7 @@ fun TopBar(
 }
 
 @Composable
-fun SettingsDialog(
+fun SettingsDialog2(
     onDismiss: () -> Unit,
     onSoundToggle: (Boolean) -> Unit,
     onMusicToggle: (Boolean) -> Unit,
