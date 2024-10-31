@@ -39,7 +39,7 @@ fun SettingsDialog(
             ),
     ) {
         Card(
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(4.dp),
         ) {
             Column(
