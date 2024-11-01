@@ -1,5 +1,6 @@
 package com.example.wordsearch.viewModels
 
+import androidx.annotation.DrawableRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewmodel.initializer
@@ -49,6 +50,6 @@ class MainViewModel(
 }
 
 data class MainUiState(
-    val backGroundImage: Int = R.drawable.sky,
+    @DrawableRes val backGroundImage: Int = R.drawable.sky,
     val totalWordsFound: Int = 0,
 )

@@ -36,10 +36,10 @@ val images =
     listOf(
         R.drawable.sky,
         R.drawable.stars,
-        R.drawable.mountain,
-        R.drawable.sky,
-        R.drawable.stars,
-        R.drawable.mountain,
+        R.drawable.rainy,
+        R.drawable.foggy,
+        R.drawable.drizzle,
+        R.drawable.snowy
     )
 
 @Composable

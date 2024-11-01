@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -11,9 +12,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.wordsearch.viewModels.Word
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -39,7 +42,7 @@ fun WordItem(word: Word) {
     Box(
         modifier =
             Modifier
-                .padding(horizontal = 10.dp, vertical = 4.dp),
+                .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
@@ -48,6 +51,8 @@ fun WordItem(word: Word) {
                 MaterialTheme.typography.bodyMedium.copy(
                     textDecoration = if (word.found) TextDecoration.LineThrough else TextDecoration.None,
                     color = if (word.found) Color.Gray else Color.Black,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
                 ),
         )
     }
@@ -65,5 +70,5 @@ private fun WordListPreviw() {
             Word("Bat", false),
             Word("Bat", false),
         )
-    WordList(words = words)
+    WordList(words = words, modifier = Modifier.fillMaxWidth())
 }

@@ -2,6 +2,12 @@ package com.example.wordsearch.ui.screens
 
 import ExitConfirmationDialog
 import SettingsDialog
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -13,6 +19,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -59,45 +68,70 @@ fun SearchGameScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            SearchGridTopbar(
-                title = "Word Search",
-                coins = uiState.coins,
-                onCloseClick = { showDialog = true },
-                onHintClick = {
-                    if (uiState.availableHints > 0) {
-                        searchGameViewModal.useHint()
-                        searchGridViewModel.highlightFirstCharacter()
-                    }
-                },
-                onSettingsClick = { showSettingsDialog = true },
-            )
-        },
+    Box(
+        modifier = Modifier.fillMaxSize(),
     ) {
-        SearchGrid(
-            modifier = modifier.padding(it),
+        Image(
+            painter = painterResource(id = uiState.backgroundImgRes),
+            contentDescription = "Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
         )
 
-        // Show the custom dialog when showDialog is true
-        if (showDialog) {
-            ExitConfirmationDialog(
-                onContinue = { showDialog = false },
-                onQuit = {
-                    showDialog = false
-                    navigateToMainScreen()
-                }, // Navigate to main screen on quit
-            )
-        }
+        Scaffold(
+            modifier =
+                Modifier
+                    .background(Color.Transparent)
+                    .fillMaxSize(),
+            containerColor = Color.Transparent,
+            contentColor = Color.Transparent,
+            topBar = {
+                SearchGridTopbar(
+                    title = "Word Search",
+                    coins = uiState.coins,
+                    onCloseClick = { showDialog = true },
+                    onHintClick = {
+                        if (uiState.availableHints > 0) {
+                            searchGameViewModal.useHint()
+                            searchGridViewModel.highlightFirstCharacter()
+                        }
+                    },
+                    onSettingsClick = { showSettingsDialog = true },
+                )
+            },
+        ) {
+            Column(
+                modifier =
+                    modifier
+                        .fillMaxSize()
+                        .padding(it),
+                verticalArrangement = Arrangement.Center,
+            ) {
+                SearchGrid(
+                    modifier = Modifier,
+                )
+            }
 
-        if (showSettingsDialog) {
-            SettingsDialog(
-                onDismiss = { showSettingsDialog = false },
-                isSoundEnabled = searchGridViewModel.uiState.value.isSoundEnabled,
-                onSoundToggle = { searchGridViewModel.toggleSound() },
-                isMusicEnabled = uiState.musicEnabled,
-                onMusicToggle = { searchGameViewModal.toggleMusic() },
-            )
+            // Show the custom dialog when showDialog is true
+            if (showDialog) {
+                ExitConfirmationDialog(
+                    onContinue = { showDialog = false },
+                    onQuit = {
+                        showDialog = false
+                        navigateToMainScreen()
+                    }, // Navigate to main screen on quit
+                )
+            }
+
+            if (showSettingsDialog) {
+                SettingsDialog(
+                    onDismiss = { showSettingsDialog = false },
+                    isSoundEnabled = searchGridViewModel.uiState.value.isSoundEnabled,
+                    onSoundToggle = { searchGridViewModel.toggleSound() },
+                    isMusicEnabled = uiState.musicEnabled,
+                    onMusicToggle = { searchGameViewModal.toggleMusic() },
+                )
+            }
         }
     }
 }
@@ -108,9 +142,5 @@ fun SearchGameScreen(
 )
 @Composable
 private fun SearchGreenScreenPreview() {
-//    SearchGameScreen(navigateToMainScreen = {
-//        navController.navigate("main")
-//    })
-
-    ExitConfirmationDialog(onQuit = { /*TODO*/ }) {}
+//    ExitConfirmationDialog(onQuit = { /*TODO*/ }) {}
 }

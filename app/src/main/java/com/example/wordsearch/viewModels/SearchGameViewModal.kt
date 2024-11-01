@@ -28,11 +28,12 @@ class SearchGameViewModal(
     private var mediaPlayer: MediaPlayer? = null
 
     init {
-        _uiState.value = _uiState.value.copy(backgroundImgRes = themePreferenceManager.getBackgroundImage())
         // Load sound setting on initialization
-        _uiState.value = _uiState.value.copy(musicEnabled = soundSettingsManager.isMusicEnabled())
-        // Initialize and play soothing music
-//        startBackgroundMusic()
+        _uiState.value =
+            _uiState.value.copy(
+                backgroundImgRes = themePreferenceManager.getBackgroundImage(),
+                musicEnabled = soundSettingsManager.isMusicEnabled(),
+            )
     }
 
     fun startBackgroundMusic() {

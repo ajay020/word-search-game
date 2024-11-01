@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wordsearch.viewModels.SearchGridState
 import com.example.wordsearch.viewModels.SearchGridViewModel
+import com.example.wordsearch.viewModels.Word
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.sign
@@ -56,23 +57,33 @@ fun SearchGrid(
     Column(
         modifier =
             modifier
-                .fillMaxSize()
-                .background(Color.LightGray),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+                .padding(4.dp)
+                .background(Color.Transparent),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box(
             modifier =
                 Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .border(1.dp, Color.Yellow)
-                    .padding(0.dp),
+                    .background(Color.Transparent)
+//                    .weight(1f)
+                    .fillMaxWidth(),
             contentAlignment = Alignment.TopCenter,
         ) {
             MainContent(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier,
                 uiState = uiState,
-                viewModel = viewModel,
+                onDragStart = { offset: Offset, cellSize: Float ->
+                    viewModel.onDragStart(
+                        offset,
+                        cellSize,
+                    )
+                },
+                onDrag = { viewModel.onDrag(it) },
+                onDragEnd = { viewModel.onDragEnd() },
+                getCurrentLineColor = { viewModel.getCurrentLineColor() },
+                updateSelectedCells = { offset: Offset, cellSize: Float ->
+                    viewModel.updateSelectedCells(offset, cellSize)
+                },
             )
 
             if (uiState.showCompletionDialog) {
@@ -85,18 +96,21 @@ fun SearchGrid(
     }
 }
 
+@Suppress("LongParameterList")
 @Composable
 fun MainContent(
     modifier: Modifier = Modifier,
     uiState: SearchGridState,
-    viewModel: SearchGridViewModel,
+    onDragStart: (Offset, Float) -> Unit,
+    onDragEnd: () -> Unit,
+    onDrag: (Offset) -> Unit,
+    getCurrentLineColor: () -> Color = { Color.Green },
+    updateSelectedCells: (Offset, Float) -> Unit = { _, _ -> },
 ) {
     BoxWithConstraints(
         modifier =
             modifier
-                .border(2.dp, Color.DarkGray)
-                .wrapContentSize()
-                .background(Color.Cyan),
+                .wrapContentSize(),
         contentAlignment = Alignment.Center,
     ) {
         val density = LocalDensity.current
@@ -145,17 +159,16 @@ fun MainContent(
                         .background(Color.Cyan)
                         .pointerInput(Unit) {
                             detectDragGestures(
-                                onDragStart = { offset -> viewModel.onDragStart(offset, cellSize) },
-                                onDragEnd = { viewModel.onDragEnd() },
-                                onDrag = { change, _ -> viewModel.onDrag(change.position) },
+                                onDragStart = { offset -> onDragStart(offset, cellSize) },
+                                onDragEnd = { onDragEnd() },
+                                onDrag = { change, _ -> onDrag(change.position) },
                             )
                         },
             ) {
                 Canvas(
                     modifier =
                         Modifier
-                            .fillMaxSize()
-                            .border(1.dp, Color.Red),
+                            .fillMaxSize(),
                 ) {
                     // Draw grid
                     for (i in 0 until rows) {
@@ -173,7 +186,7 @@ fun MainContent(
                             drawCircle(
                                 color =
                                     if (Pair(i, j) in uiState.positionOfHintWords) {
-                                        Color.Red
+                                        getCurrentLineColor()
                                     } else {
                                         Color.Transparent
                                     },
@@ -208,7 +221,7 @@ fun MainContent(
                             color = foundWord.color,
                             style =
                                 Stroke(
-                                    width = cellSize / 2,
+                                    width = cellSize * 3/4,
                                     cap = StrokeCap.Round,
                                     join = StrokeJoin.Bevel,
                                 ),
@@ -224,7 +237,7 @@ fun MainContent(
                                     start.first * cellSize + cellSize / 2,
                                 )
                             val direction = getDirection(startOffset, end)
-                            val strokeWidth = cellSize / 2
+                            val strokeWidth = cellSize * 3/4
                             val constrainedStart =
                                 constrainToDirection(
                                     startOffset,
@@ -247,13 +260,13 @@ fun MainContent(
                                 )
 
                             drawLine(
-                                color = viewModel.getCurrentLineColor(),
+                                color = getCurrentLineColor(),
                                 start = constrainedStart,
                                 end = constrainedEnd,
                                 strokeWidth = strokeWidth,
                                 cap = StrokeCap.Round,
                             )
-                            viewModel.updateSelectedCells(constrainedEnd, cellSize)
+                            updateSelectedCells(constrainedEnd, cellSize)
                         }
                     }
 
@@ -320,6 +333,7 @@ fun getDirection(
     }
 }
 
+@Suppress("LongParameterList")
 fun constrainToDirection(
     start: Offset,
     end: Offset,
@@ -374,4 +388,16 @@ private fun WordSearchPreview() {
             "CAT",
             "DOG",
         )
+
+    val words = wordList.map { Word(it, false) }
+    
+    MainContent(
+        uiState = SearchGridState(
+            grid = grid,
+            words = words
+        ),
+        onDragStart = { a, b -> /*TODO*/ },
+        onDragEnd = { /*TODO*/ },
+        onDrag = {}
+    )
 }

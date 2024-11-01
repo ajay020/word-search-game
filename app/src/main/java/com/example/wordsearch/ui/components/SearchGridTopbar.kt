@@ -37,14 +37,9 @@ fun SearchGridTopbar(
     onSettingsClick: () -> Unit
 ) {
     TopAppBar(
-        modifier = Modifier.background(Color.White.copy(alpha = 1f)),
         colors =
-            TopAppBarColors(
+            androidx.compose.material3.TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.Transparent,
-                actionIconContentColor = Color.White,
-                navigationIconContentColor = Color.Black,
-                titleContentColor = Color.Black,
-                scrolledContainerColor = Color.Black,
             ),
         title = {
             Text(
