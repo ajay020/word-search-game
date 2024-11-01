@@ -102,6 +102,7 @@ class SearchGridViewModel(
         progressManager.saveCurrentLevel(nextLevel)
 
         if (nextLevel < _uiState.value.totalLevels) {
+
             loadPuzzle(nextLevel)
         }
     }
@@ -311,6 +312,9 @@ class SearchGridViewModel(
     private fun checkIfPuzzleCompleted() {
         if (_uiState.value.words.all { it.found }) {
             onPuzzleCompleted()
+            // Save the searched words count
+            val searchedWordsCount = _uiState.value.foundWords.size
+            progressManager.saveSearchedWordsCount(  searchedWordsCount )
         }
     }
 
