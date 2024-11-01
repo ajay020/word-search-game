@@ -60,7 +60,7 @@ class HomeViewModel(
 
     private fun startBackgroundMusic() {
         if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer.create(getApplication(), R.raw.music)
+            mediaPlayer = MediaPlayer.create(getApplication(), R.raw.piano_music_soft)
             mediaPlayer?.isLooping = true // Set looping
             mediaPlayer?.start()
         }

@@ -35,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wordsearch.R
 import com.example.wordsearch.ui.components.ThemeSelectionDialog
 import com.example.wordsearch.viewModels.MainViewModel
+import com.example.wordsearch.viewModels.SearchGameViewModal
 import com.example.wordsearch.viewModels.SearchGridState
 import com.example.wordsearch.viewModels.SearchGridViewModel
 
@@ -42,9 +43,11 @@ import com.example.wordsearch.viewModels.SearchGridViewModel
 fun MainScreen(
     navigateToGameScreen: (Int) -> Unit,
     viewModel: SearchGridViewModel = viewModel(factory = SearchGridViewModel.Factory),
+    searchGameViewModal: SearchGameViewModal = viewModel(factory = SearchGameViewModal.FACTORY),
     mainViewModel: MainViewModel = viewModel(factory = MainViewModel.Factory),
 ) {
     val searchGridUiState = viewModel.uiState.value
+    val searchGameUiState by searchGameViewModal.uiState.collectAsState()
     val mainUiState by mainViewModel.uiState.collectAsState()
 
     var showSettingDialog by remember {
@@ -96,6 +99,8 @@ fun MainScreen(
                     onDismiss = { showSettingDialog = false },
                     onSoundToggle = { viewModel.toggleSound() },
                     isSoundEnabled = searchGridUiState.isSoundEnabled,
+                    isMusicEnabled = searchGameUiState.musicEnabled,
+                    onMusicToggle = { searchGameViewModal.toggleMusic() },
                 )
             }
 

@@ -49,13 +49,16 @@ class SearchGridViewModel(
     private val soundPool: SoundPool = SoundPool.Builder().setMaxStreams(1).build()
     private var cellEnterSound: Int = 0
     private var wordMatchSound: Int = 0
+    private var wordNotMatchSound: Int = 0
     private var lastPlayedCell: Pair<Int, Int>? = null
     private var lastSoundPlayedTime = 0L
-    private val soundPlayInterval = 100L
+    private val soundPlayInterval = 0L
+    private var isWordFound = false
 
     init {
         cellEnterSound = soundPool.load(getApplication(), R.raw.click, 1)
-        wordMatchSound = soundPool.load(getApplication(), R.raw.crank, 1)
+        wordMatchSound = soundPool.load(getApplication(), R.raw.accept_confirm, 1)
+        wordNotMatchSound = soundPool.load(getApplication(), R.raw.menu_click, 1)
 
         // Load the puzzles when the ViewModel is initialized
         viewModelScope.launch {
@@ -146,38 +149,48 @@ class SearchGridViewModel(
         playCellEnterSound()
     }
 
-    fun onDragEnd() {
-        // Reset lastPlayedCells when drag ends
-        lastPlayedCell = null
-        if (!isWordMatched()) {
-            resetGridStates()
-        }
-    }
-
     fun onDrag(offset: Offset) {
         _uiState.value = _uiState.value.copy(currentDragPosition = offset)
     }
 
+    fun onDragEnd() {
+        // Reset lastPlayedCells when drag ends
+        lastPlayedCell = null
+
+        if (!isWordFound) {
+            playWordNotMatchedSound()
+            resetGridStates()
+        }
+        // Reset isWordFound flag
+        isWordFound = false
+    }
+
     private fun playCellEnterSound() {
         if (_uiState.value.isSoundEnabled) {
-            soundPool.play(
-                cellEnterSound,
-                1f,
-                1f,
-                0,
-                0,
-                2f,
-            )
+            val currentTime = System.currentTimeMillis()
+            if (currentTime - lastSoundPlayedTime >= soundPlayInterval) {
+                soundPool.play(
+                    cellEnterSound,
+                    1f,
+                    1f,
+                    0,
+                    0,
+                    2f,
+                )
+                lastSoundPlayedTime = currentTime
+            }
         }
     }
 
     private fun playWordMatchedSound() {
         if (_uiState.value.isSoundEnabled) {
-            val currentTime = System.currentTimeMillis()
-            if (currentTime - lastSoundPlayedTime >= soundPlayInterval) {
-                soundPool.play(wordMatchSound, 1f, 1f, 0, 0, 1f)
-                lastSoundPlayedTime = currentTime
-            }
+            soundPool.play(wordMatchSound, 1f, 1f, 0, 0, 2f)
+        }
+    }
+
+    private fun playWordNotMatchedSound() {
+        if (_uiState.value.isSoundEnabled) {
+            soundPool.play(wordNotMatchSound, 1f, 1f, 0, 0, 1f)
         }
     }
 
@@ -187,6 +200,7 @@ class SearchGridViewModel(
             _uiState.value.words.any {
                 !it.found && (it.text == selectedWord || it.text == selectedWord.reversed())
             }
+
         return isMatched
     }
 
@@ -196,6 +210,7 @@ class SearchGridViewModel(
             playWordMatchedSound()
             onWordFound(selectedWord)
             resetGridStates()
+            isWordFound = true
         }
     }
 

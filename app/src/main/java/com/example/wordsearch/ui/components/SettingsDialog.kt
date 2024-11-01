@@ -29,6 +29,8 @@ fun SettingsDialog(
     onDismiss: () -> Unit,
     isSoundEnabled: Boolean,
     onSoundToggle: (Boolean) -> Unit,
+    isMusicEnabled: Boolean,
+    onMusicToggle: (Boolean) -> Unit,
 ) {
     Dialog(
         onDismissRequest = { },
@@ -83,8 +85,8 @@ fun SettingsDialog(
                     ) {
                         Text("Music")
                         Switch(
-                            checked = false,
-                            onCheckedChange = {},
+                            checked = isMusicEnabled,
+                            onCheckedChange = onMusicToggle,
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -111,5 +113,7 @@ private fun ExitConfirmDialogPreview() {
         onDismiss = {},
         isSoundEnabled = true,
         onSoundToggle = {},
+        isMusicEnabled = true,
+        onMusicToggle = {},
     )
 }
