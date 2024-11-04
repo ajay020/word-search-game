@@ -8,10 +8,6 @@ android {
     namespace = "com.example.wordsearch"
     compileSdk = 34
 
-//    sourceSets.getByName("main") {
-//        java.srcDirs("src/main/kotlin/puzzleGenerator")
-//    }
-
     defaultConfig {
         applicationId = "com.example.wordsearch"
         minSdk = 24
@@ -69,6 +65,11 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.core.splashscreen)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
