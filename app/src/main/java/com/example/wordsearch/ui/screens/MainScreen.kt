@@ -141,26 +141,26 @@ fun MainScreenContent(
     ) {
         // Display for total words found
         Box(
-            modifier = Modifier
-                .padding(top = 92.dp)
-                .size(160.dp)
-                .clip(CircleShape)
-                .background(Color.DarkGray.copy(alpha = 0.7f)),
-            contentAlignment = Alignment.Center
-
+            modifier =
+                Modifier
+                    .padding(top = 92.dp)
+                    .size(160.dp)
+                    .clip(CircleShape)
+                    .background(Color.DarkGray.copy(alpha = 0.7f)),
+            contentAlignment = Alignment.Center,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "${mainUiState.totalWordsFound}",
                     fontSize = 30.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.LightGray
+                    color = Color.LightGray,
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
                     text = "Words Found",
                     fontSize = 18.sp,
-                    color = Color.Gray
+                    color = Color.Gray,
                 )
             }
         }
@@ -224,7 +224,7 @@ private fun MainScreenPreview() {
                 .background(Color.LightGray),
     ) {
         Image(
-            painter = painterResource(id = R.drawable.sky),
+            painter = painterResource(id = R.drawable.bg2),
             contentDescription = "Background",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
@@ -233,9 +233,10 @@ private fun MainScreenPreview() {
             modifier = Modifier.background(Color.Transparent),
             navigateToGameScreen = {},
             searchGridUiState = SearchGridState(),
-            mainUiState = MainUiState(
-                totalWordsFound = 1059,
-            ),
+            mainUiState =
+                MainUiState(
+                    totalWordsFound = 1059,
+                ),
         )
     }
 

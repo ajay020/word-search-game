@@ -16,5 +16,5 @@ class ThemePreferenceManager(
         sharedPreferences.edit().putInt(BACKGROUND_IMAGE_KEY, resourceId).apply()
     }
 
-    fun getBackgroundImage(): Int = sharedPreferences.getInt(BACKGROUND_IMAGE_KEY, R.drawable.mountain)
+    fun getBackgroundImage(): Int = sharedPreferences.getInt(BACKGROUND_IMAGE_KEY, R.drawable.sky)
 }

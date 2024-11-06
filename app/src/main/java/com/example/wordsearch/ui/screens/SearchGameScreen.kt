@@ -68,6 +68,8 @@ fun SearchGameScreen(
         }
     }
 
+//    Log.d("SearchGameScreen", "bg: ${uiState.backgroundImgRes}")
+
     Box(
         modifier = Modifier.fillMaxSize(),
     ) {

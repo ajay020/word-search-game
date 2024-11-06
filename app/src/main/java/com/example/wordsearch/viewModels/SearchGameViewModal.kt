@@ -117,5 +117,5 @@ data class SearchGameState(
     val coins: Int = 50,
     val musicEnabled: Boolean = true,
     val availableHints: Int = coins / HINT_COST,
-    @DrawableRes val backgroundImgRes: Int = R.drawable.sky,
+    @DrawableRes val backgroundImgRes: Int = R.drawable.bg2,
 )

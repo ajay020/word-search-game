@@ -29,17 +29,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.example.wordsearch.R
+import com.example.wordsearch.ui.theme.WordSearchTheme
 
 val images =
     listOf(
-        R.drawable.sky,
+        R.drawable.bg2,
+        R.drawable.bg3,
+        R.drawable.bg4,
+        R.drawable.bg5,
+        R.drawable.bg6,
+        R.drawable.bg7,
+        R.drawable.bg8,
         R.drawable.stars,
         R.drawable.rainy,
-        R.drawable.foggy,
-        R.drawable.drizzle,
-        R.drawable.snowy
+        R.drawable.mountain,
     )
 
 @Composable
@@ -57,17 +61,22 @@ fun ThemeSelectionDialog(
                     .padding(0.dp),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 6.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp),
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text("Choose a Background")
+                Text(
+                    "Choose a Background",
+                    color = Color.Black,
+                )
                 IconButton(onClick = { onDismiss() }) {
                     Icon(
                         Icons.Default.Close,
                         contentDescription = "Close button",
+                        tint = Color.Black,
                     )
                 }
             }
@@ -102,8 +111,9 @@ fun ThemeSelectionDialog(
 )
 @Composable
 private fun ImageSelectionDialogPreview() {
-    ThemeSelectionDialog(
-        onDismiss = {},
-        onImageSelected = {},
-    )
+
+        ThemeSelectionDialog(
+            onDismiss = {},
+            onImageSelected = {},
+        )
 }
