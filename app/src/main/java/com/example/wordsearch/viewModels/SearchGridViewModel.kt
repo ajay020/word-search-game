@@ -32,15 +32,16 @@ class SearchGridViewModel(
 ) : AndroidViewModel(application) {
     private val availableColors =
         listOf(
-            Color.Red,
-            Color.Blue,
             Color.Green,
+            Color(0xFF44A0EB),
             Color.Magenta,
-            Color.Cyan,
+            Color(0xFFE79237),
             Color.Yellow,
             Color(0xFF800080),
             Color(0xFFFFA500),
             Color(0xFF008080),
+            Color(0xFFE92E6E),
+            Color(0xFFBF3AE4),
         )
 
     private val _uiState = mutableStateOf(SearchGridState())
@@ -102,7 +103,6 @@ class SearchGridViewModel(
         progressManager.saveCurrentLevel(nextLevel)
 
         if (nextLevel < _uiState.value.totalLevels) {
-
             loadPuzzle(nextLevel)
         }
     }
@@ -314,7 +314,7 @@ class SearchGridViewModel(
             onPuzzleCompleted()
             // Save the searched words count
             val searchedWordsCount = _uiState.value.foundWords.size
-            progressManager.saveSearchedWordsCount(  searchedWordsCount )
+            progressManager.saveSearchedWordsCount(searchedWordsCount)
         }
     }
 

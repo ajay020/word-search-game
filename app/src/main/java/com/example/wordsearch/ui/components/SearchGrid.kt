@@ -58,17 +58,9 @@ fun SearchGrid(
         modifier =
             modifier
                 .padding(4.dp)
-                .background(Color.Transparent),
+                .background(Color.Gray),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Box(
-            modifier =
-                Modifier
-                    .background(Color.Transparent)
-//                    .weight(1f)
-                    .fillMaxWidth(),
-            contentAlignment = Alignment.TopCenter,
-        ) {
             MainContent(
                 modifier = Modifier,
                 uiState = uiState,
@@ -92,7 +84,6 @@ fun SearchGrid(
                     onNextPuzzle = { viewModel.loadNextPuzzle() },
                 )
             }
-        }
     }
 }
 
@@ -110,7 +101,9 @@ fun MainContent(
     BoxWithConstraints(
         modifier =
             modifier
+                .background(Color.White.copy(alpha = 0.5f))
                 .wrapContentSize(),
+        
         contentAlignment = Alignment.Center,
     ) {
         val density = LocalDensity.current
@@ -139,8 +132,10 @@ fun MainContent(
         val gridHeight = cellSize * rows
 
         Column(
-            modifier = Modifier.width(with(density) { gridWidth.toDp() }),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+//                .background(Color.White.copy(alpha = 0.2f))
+                .width(with(density) { gridWidth.toDp() }),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Word List
@@ -148,15 +143,22 @@ fun MainContent(
                 modifier =
                     Modifier
                         .width(gridWidth.dp)
-                        .background(Color.White),
+                        .background(Color.Transparent),
                 words = uiState.words,
             )
 
             Box(
                 modifier =
                     Modifier
-                        .size(with(density) { gridWidth.toDp() }, with(density) { gridHeight.toDp() })
-                        .background(Color.Cyan)
+                        .background(Color.White.copy(alpha = 0.5f))
+                        .size(
+                            with(density) {
+                                gridWidth.toDp()
+                            },
+                            with(density) {
+                                gridHeight.toDp()
+                            },
+                        )
                         .pointerInput(Unit) {
                             detectDragGestures(
                                 onDragStart = { offset -> onDragStart(offset, cellSize) },
@@ -174,7 +176,7 @@ fun MainContent(
                     for (i in 0 until rows) {
                         for (j in 0 until cols) {
                             drawRect(
-                                color = Color.White,
+                                color = Color.Transparent,
                                 topLeft = Offset(j * cellSize, i * cellSize),
                                 size =
                                     Size(
@@ -221,7 +223,7 @@ fun MainContent(
                             color = foundWord.color,
                             style =
                                 Stroke(
-                                    width = cellSize * 3/4,
+                                    width = cellSize * 3 / 4,
                                     cap = StrokeCap.Round,
                                     join = StrokeJoin.Bevel,
                                 ),
@@ -237,7 +239,7 @@ fun MainContent(
                                     start.first * cellSize + cellSize / 2,
                                 )
                             val direction = getDirection(startOffset, end)
-                            val strokeWidth = cellSize * 3/4
+                            val strokeWidth = cellSize * 3 / 4
                             val constrainedStart =
                                 constrainToDirection(
                                     startOffset,
@@ -390,14 +392,15 @@ private fun WordSearchPreview() {
         )
 
     val words = wordList.map { Word(it, false) }
-    
+
     MainContent(
-        uiState = SearchGridState(
-            grid = grid,
-            words = words
-        ),
+        uiState =
+            SearchGridState(
+                grid = grid,
+                words = words,
+            ),
         onDragStart = { a, b -> /*TODO*/ },
         onDragEnd = { /*TODO*/ },
-        onDrag = {}
+        onDrag = {},
     )
 }

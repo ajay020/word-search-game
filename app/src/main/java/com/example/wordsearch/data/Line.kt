@@ -16,7 +16,7 @@ val lightPink = Color(0xFFE92E6E)
 val yellow = Color(0xFFEEDB2C)
 val magenta = Color(0xFFB14DE7)
 val lightBlue = Color(0xFF44A0EB)
-val breakRed = Color(0xFFEC3D42)
+val breakRed = Color(0xFFF5272D)
 
 val colors =
     listOf(
