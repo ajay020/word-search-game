@@ -288,6 +288,7 @@ fun MainContent(
                                             android.graphics.Color.BLACK
                                         }
                                     textSize = cellSize * 0.5f
+                                    isFakeBoldText = true
                                 },
                             )
                         }

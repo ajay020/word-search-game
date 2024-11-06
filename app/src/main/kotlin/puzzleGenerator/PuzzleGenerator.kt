@@ -7,6 +7,7 @@ import kotlin.random.Random
 @Serializable
 data class WordSearchPuzzle(
     val id: String,
+    var theme: String,
     val grid: List<String>,
     val wordsToFind: List<String>,
 )
@@ -54,6 +55,7 @@ class WordSearchGenerator(
             id = generateId(),
             grid = grid.map { it.joinToString("") },
             wordsToFind = placedWords,
+            theme = "",
         )
     }
 
@@ -147,11 +149,15 @@ fun main() {
     val input = readLine() ?: ""
     val words = input.split(",").map { it.trim() }
 
+    println("Enter the theme for the puzzle:")
+    val theme = readLine() ?: ""
+
     println("Enter the size of the puzzle grid:")
     val size = readLine()?.toIntOrNull() ?: 8
 
     val generator = WordSearchGenerator(size)
     val puzzle = generator.generatePuzzle(words)
+    puzzle.theme = theme
 
     PuzzleManager.addPuzzle(puzzle)
 
