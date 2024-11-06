@@ -280,7 +280,11 @@ class SearchGridViewModel(
         val index =
             _uiState.value.words.indexOfFirst { it.text == word || it.text == word.reversed() }
         if (index != -1) {
-            words[index] = words[index].copy(found = true)
+            words[index] =
+                words[index].copy(
+                    found = true,
+                    color = getCurrentLineColor(),
+                )
             _uiState.value =
                 _uiState.value.copy(
                     words = words,
@@ -397,6 +401,7 @@ class SearchGridViewModel(
 data class Word(
     val text: String,
     val found: Boolean,
+    val color: Color = Color.Black,
 )
 
 // Data class to store a found word with its corresponding line and color

@@ -50,7 +50,7 @@ fun WordItem(word: Word) {
             style =
                 MaterialTheme.typography.bodyMedium.copy(
                     textDecoration = if (word.found) TextDecoration.LineThrough else TextDecoration.None,
-                    color = if (word.found) Color.Gray else Color.Black,
+                    color = if (word.found) word.color else Color.Black,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                 ),
