@@ -37,10 +37,10 @@ class SearchGridViewModel(
             Color.Magenta,
             Color(0xFFE79237),
             Color.Yellow,
-            Color(0xFF800080),
+            Color(0xFFE22F9B),
             Color(0xFFFFA500),
-            Color(0xFF008080),
-            Color(0xFFE92E6E),
+            Color(0xFF2CD6D6),
+            Color(0xFFE03A3A),
             Color(0xFFBF3AE4),
         )
 

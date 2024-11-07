@@ -16,13 +16,9 @@ class PuzzleProgressManager(
         sharedPreferences.edit().putInt(KEY_CURRENT_LEVEL, level).apply()
     }
 
-    fun getCurrentLevel(): Int {
-        return sharedPreferences.getInt(KEY_CURRENT_LEVEL, 0) // Default to level 0 if not found
-    }
+    fun getCurrentLevel(): Int = sharedPreferences.getInt(KEY_CURRENT_LEVEL, 0)
 
-    fun getTotalWordFound(): Int {
-        return sharedPreferences.getInt(KEY_TOTAL_WORD_FOUND, 0) // Default to level 0 if not found
-    }
+    fun getTotalWordFound(): Int = sharedPreferences.getInt(KEY_TOTAL_WORD_FOUND, 0)
 
     fun saveSearchedWordsCount(wordCount: Int) {
         val currentWordCount = getTotalWordFound()

@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class MainViewModel(
     private val themePreferenceManager: ThemePreferenceManager,
-    private val puzzleProgressManager: PuzzleProgressManager,
+    puzzleProgressManager: PuzzleProgressManager,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
