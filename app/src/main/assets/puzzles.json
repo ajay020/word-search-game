@@ -1,5 +1,26 @@
 [
   {
+    "id": "1729318013896",
+    "grid": [
+      "DOTBRZEH",
+      "EOPUJLKS",
+      "IMHWNYAS",
+      "KQIEKOCG",
+      "OFIWBODY",
+      "OPXGVOQX",
+      "CMYDNACR",
+      "JELLYIXX"
+    ],
+    "wordsToFind": [
+      "CANDY",
+      "CAKE",
+      "DONUT",
+      "COOKIE",
+      "PIE",
+      "JELLY"
+    ]
+  },
+  {
     "id": "1730886069675",
     "theme": "Music",
     "grid": [
@@ -132,7 +153,6 @@
       "REPAPSJ"
     ],
     "wordsToFind": [
-      "PEN",
       "PENCIL",
       "BOOK",
       "PAPER",
@@ -488,27 +508,6 @@
       "RAIN",
       "SNOW",
       "FOG"
-    ]
-  },
-  {
-    "id": "1729318013896",
-    "grid": [
-      "DOTBRZEH",
-      "EOPUJLKS",
-      "IMHWNYAS",
-      "KQIEKOCG",
-      "OFIWBODY",
-      "OPXGVOQX",
-      "CMYDNACR",
-      "JELLYIXX"
-    ],
-    "wordsToFind": [
-      "CANDY",
-      "CAKE",
-      "DONUT",
-      "COOKIE",
-      "PIE",
-      "JELLY"
     ]
   }
 ]

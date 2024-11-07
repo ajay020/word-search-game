@@ -2,6 +2,7 @@ package com.example.wordsearch.ui.screens
 
 import ExitConfirmationDialog
 import SettingsDialog
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -45,6 +46,10 @@ fun SearchGameScreen(
         mutableStateOf(false)
     }
 
+    val hasGameStarted =
+        searchGridViewModel.uiState.value.foundWords
+            .isNotEmpty()
+
     LaunchedEffect(Unit) {
         searchGameViewModal.startBackgroundMusic()
     }
@@ -68,8 +73,6 @@ fun SearchGameScreen(
         }
     }
 
-//    Log.d("SearchGameScreen", "bg: ${uiState.backgroundImgRes}")
-
     Box(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -78,6 +81,14 @@ fun SearchGameScreen(
             contentDescription = "Background",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop,
+        )
+
+        // Handle back press
+        BackHandler(
+            enabled = hasGameStarted,
+            onBack = {
+                showDialog = true
+            },
         )
 
         Scaffold(
@@ -91,7 +102,13 @@ fun SearchGameScreen(
                 SearchGridTopbar(
                     title = "Word Search",
                     coins = uiState.coins,
-                    onCloseClick = { showDialog = true },
+                    onCloseClick = {
+                        if (hasGameStarted) {
+                            showDialog = true
+                        } else {
+                            navigateToMainScreen()
+                        }
+                    },
                     onHintClick = {
                         if (uiState.availableHints > 0) {
                             searchGameViewModal.useHint()

@@ -15,7 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,7 +33,7 @@ fun SearchGridTopbar(
     coins: Int,
     onCloseClick: () -> Unit,
     onHintClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
 ) {
     TopAppBar(
         colors =
@@ -83,11 +82,11 @@ fun SearchGridTopbar(
                     tint = Color.Red,
                 )
             }
-            IconButton(onClick = {onSettingsClick()}) {
+            IconButton(onClick = { onSettingsClick() }) {
                 Icon(
                     Icons.Default.Settings,
                     contentDescription = "Setting icon",
-                    tint = Color.DarkGray
+                    tint = Color.DarkGray,
                 )
             }
         },
@@ -102,6 +101,6 @@ private fun SearchGridTopBarPreivew() {
         coins = 100,
         onCloseClick = { /*TODO*/ },
         onHintClick = { },
-        onSettingsClick = {}
+        onSettingsClick = {},
     )
 }
