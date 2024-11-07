@@ -8,12 +8,14 @@ import kotlinx.coroutines.withContext
 
 data class Puzzle(
     val id: Long,
+    val theme: String? = null,
     val grid: List<List<Char>>,
     val words: List<String>,
 )
 
 data class PuzzleJson(
     val id: Long,
+    val theme: String? = null,
     val grid: List<String>, // Keep the grid as List<String> to match the JSON
     val wordsToFind: List<String>,
 )
@@ -38,6 +40,7 @@ class PuzzleRepository(
                         id = puzzleJson.id,
                         grid = puzzleJson.grid.map { it.toList() }, // Convert each string to a List<Char>
                         words = puzzleJson.wordsToFind,
+                        theme = puzzleJson.theme,
                     )
                 }
         }

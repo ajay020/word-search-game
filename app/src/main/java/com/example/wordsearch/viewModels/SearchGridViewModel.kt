@@ -21,6 +21,9 @@ import com.example.wordsearch.repository.PuzzleRepository
 import com.example.wordsearch.utils.GridUtils.findWordInGrid
 import com.example.wordsearch.utils.PuzzleProgressManager
 import com.example.wordsearch.utils.SoundSettingsManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
@@ -46,6 +49,9 @@ class SearchGridViewModel(
 
     private val _uiState = mutableStateOf(SearchGridState())
     val uiState: State<SearchGridState> = _uiState
+
+    private val _theme = MutableStateFlow<String?>(null)
+    val theme: StateFlow<String?> = _theme.asStateFlow()
 
     private val soundPool: SoundPool = SoundPool.Builder().setMaxStreams(1).build()
     private var cellEnterSound: Int = 0
@@ -86,6 +92,7 @@ class SearchGridViewModel(
                     grid = puzzle.grid,
                     currentPuzzle = puzzle,
                 )
+            _theme.value = it.theme
             setWords(puzzle.words)
         }
     }

@@ -45,6 +45,7 @@ fun SearchGameScreen(
     var showSettingsDialog by remember {
         mutableStateOf(false)
     }
+    val wordTheme = searchGridViewModel.theme.collectAsState()
 
     val hasGameStarted =
         searchGridViewModel.uiState.value.foundWords
@@ -100,7 +101,7 @@ fun SearchGameScreen(
             contentColor = Color.Transparent,
             topBar = {
                 SearchGridTopbar(
-                    title = "Word Search",
+                    title = wordTheme.value ?: "Word Search",
                     coins = uiState.coins,
                     onCloseClick = {
                         if (hasGameStarted) {

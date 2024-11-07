@@ -4,14 +4,12 @@ package com.example.wordsearch.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -61,29 +59,29 @@ fun SearchGrid(
                 .background(Color.Gray),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-            MainContent(
-                modifier = Modifier,
-                uiState = uiState,
-                onDragStart = { offset: Offset, cellSize: Float ->
-                    viewModel.onDragStart(
-                        offset,
-                        cellSize,
-                    )
-                },
-                onDrag = { viewModel.onDrag(it) },
-                onDragEnd = { viewModel.onDragEnd() },
-                getCurrentLineColor = { viewModel.getCurrentLineColor() },
-                updateSelectedCells = { offset: Offset, cellSize: Float ->
-                    viewModel.updateSelectedCells(offset, cellSize)
-                },
-            )
-
-            if (uiState.showCompletionDialog) {
-                PuzzleCompletionDialog(
-                    onDismiss = { viewModel.onDismissDialog() },
-                    onNextPuzzle = { viewModel.loadNextPuzzle() },
+        MainContent(
+            modifier = Modifier,
+            uiState = uiState,
+            onDragStart = { offset: Offset, cellSize: Float ->
+                viewModel.onDragStart(
+                    offset,
+                    cellSize,
                 )
-            }
+            },
+            onDrag = { viewModel.onDrag(it) },
+            onDragEnd = { viewModel.onDragEnd() },
+            getCurrentLineColor = { viewModel.getCurrentLineColor() },
+            updateSelectedCells = { offset: Offset, cellSize: Float ->
+                viewModel.updateSelectedCells(offset, cellSize)
+            },
+        )
+
+        if (uiState.showCompletionDialog) {
+            PuzzleCompletionDialog(
+                onDismiss = { viewModel.onDismissDialog() },
+                onNextPuzzle = { viewModel.loadNextPuzzle() },
+            )
+        }
     }
 }
 
@@ -103,7 +101,6 @@ fun MainContent(
             modifier
                 .background(Color.White.copy(alpha = 0.5f))
                 .wrapContentSize(),
-        
         contentAlignment = Alignment.Center,
     ) {
         val density = LocalDensity.current
@@ -132,9 +129,10 @@ fun MainContent(
         val gridHeight = cellSize * rows
 
         Column(
-            modifier = Modifier
+            modifier =
+                Modifier
 //                .background(Color.White.copy(alpha = 0.2f))
-                .width(with(density) { gridWidth.toDp() }),
+                    .width(with(density) { gridWidth.toDp() }),
             verticalArrangement = Arrangement.spacedBy(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -158,8 +156,7 @@ fun MainContent(
                             with(density) {
                                 gridHeight.toDp()
                             },
-                        )
-                        .pointerInput(Unit) {
+                        ).pointerInput(Unit) {
                             detectDragGestures(
                                 onDragStart = { offset -> onDragStart(offset, cellSize) },
                                 onDragEnd = { onDragEnd() },
@@ -400,7 +397,7 @@ private fun WordSearchPreview() {
                 grid = grid,
                 words = words,
             ),
-        onDragStart = { a, b -> /*TODO*/ },
+        onDragStart = { a, b -> },
         onDragEnd = { /*TODO*/ },
         onDrag = {},
     )
