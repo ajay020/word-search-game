@@ -58,7 +58,11 @@ fun WordItem(word: Word) {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 619,
+)
 @Composable
 private fun WordListPreviw() {
     val words =

@@ -4,18 +4,25 @@ package com.example.wordsearch.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -50,17 +57,19 @@ fun SearchGrid(
     navigateToMainScreen: () -> Unit,
 ) {
     val uiState = viewModel.uiState.value
+    val theme by viewModel.theme.collectAsState()
 
     Column(
         modifier =
-            modifier
-                .padding(4.dp)
-                .background(Color.Gray),
+        modifier
+            .padding(4.dp)
+            .background(Color.Gray),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         MainContent(
             modifier = Modifier,
             uiState = uiState,
+            theme = theme,
             onDragStart = { offset: Offset, cellSize: Float ->
                 viewModel.onDragStart(
                     offset,
@@ -94,6 +103,7 @@ fun SearchGrid(
 @Composable
 fun MainContent(
     modifier: Modifier = Modifier,
+    theme: String? = null,
     uiState: SearchGridState,
     onDragStart: (Offset, Float) -> Unit,
     onDragEnd: () -> Unit,
@@ -103,9 +113,9 @@ fun MainContent(
 ) {
     BoxWithConstraints(
         modifier =
-            modifier
-                .background(Color.White.copy(alpha = 0.5f))
-                .wrapContentSize(),
+        modifier
+            .background(Color.White.copy(alpha = 0.5f))
+            .wrapContentSize(),
         contentAlignment = Alignment.Center,
     ) {
         val density = LocalDensity.current
@@ -136,20 +146,32 @@ fun MainContent(
         Column(
             modifier =
                 Modifier
-//                .background(Color.White.copy(alpha = 0.2f))
                     .width(with(density) { gridWidth.toDp() }),
-            verticalArrangement = Arrangement.spacedBy(18.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Word List
-            WordList(
-                modifier =
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, Color.Gray)
+                ,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                // Word list header
+                WordListHeader(
+                    theme = theme
+                )
+                // Word List
+                WordList(
+                    modifier =
                     Modifier
                         .width(gridWidth.dp)
                         .background(Color.Transparent),
-                words = uiState.words,
-            )
+                    words = uiState.words,
+                )
+            }
 
+            Spacer(modifier = Modifier.height(20.dp))
             Box(
                 modifier =
                     Modifier
@@ -312,6 +334,23 @@ fun getDirection(
         dy < dx / 2 -> Direction.HORIZONTAL
         dx < dy / 2 -> Direction.VERTICAL
         else -> Direction.DIAGONAL
+    }
+}
+
+
+@Composable
+fun WordListHeader(modifier: Modifier = Modifier, theme: String?) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.DarkGray),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Text(
+            modifier = modifier.padding(6.dp),
+            text =  theme ?:  "Word Search",
+            color = Color.White
+        )
     }
 }
 
