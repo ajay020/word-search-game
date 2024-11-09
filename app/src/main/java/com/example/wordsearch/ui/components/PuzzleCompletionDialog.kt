@@ -1,5 +1,6 @@
 package com.example.wordsearch.ui.components
 
+import android.view.RoundedCorner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -9,12 +10,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -44,6 +48,7 @@ fun PuzzleCompletionDialog(
             Text(
                 text = "Congratulations!",
                 style = MaterialTheme.typography.titleLarge,
+                color = Color.Black,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -54,20 +59,21 @@ fun PuzzleCompletionDialog(
             )
             Text(
                 text = "You've won 25 coins!",
+                color = Color.Black,
             )
             Spacer(modifier = Modifier.height(24.dp))
-            Button(
+            AppButton(
                 modifier = Modifier.fillMaxWidth(0.9f),
-                onClick = onNextPuzzle
-            ) {
-                Text("Next")
-            }
-            TextButton(
+                onClick = onNextPuzzle,
+                text = "Next",
+                shape = CircleShape,
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            AppOutlinedButton(
                 modifier = Modifier.fillMaxWidth(0.9f),
-                onClick = onDismiss
-            ) {
-                Text("Close")
-            }
+                onClick = onDismiss,
+                text = "Close"
+            )
         }
     }
 }

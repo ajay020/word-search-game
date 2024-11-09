@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wordsearch.R
+import com.example.wordsearch.ui.components.AppButton
 import com.example.wordsearch.ui.components.ThemeSelectionDialog
 import com.example.wordsearch.viewModels.MainUiState
 import com.example.wordsearch.viewModels.MainViewModel
@@ -152,22 +153,22 @@ fun MainScreenContent(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "${mainUiState.totalWordsFound}",
-                    fontSize = 30.sp,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.LightGray,
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 Text(
                     text = "Words Found",
-                    fontSize = 18.sp,
-                    color = Color.Gray,
+                    fontSize = 20.sp,
+                    color = Color.LightGray,
                 )
             }
         }
 
         Spacer(modifier = Modifier.weight(1f)) // Push the button to the bottom
 
-        Button(
+        AppButton(
             onClick = { navigateToGameScreen(searchGridUiState.currentLevel) },
             modifier =
                 Modifier

@@ -58,7 +58,7 @@ fun TimerExpiredDialog(
                     contentDescription = ""
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(
+                AppButton(
                     modifier = Modifier.fillMaxWidth(0.9f),
                     onClick = onExtendTime,
                 ) {
@@ -74,13 +74,12 @@ fun TimerExpiredDialog(
                        )
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                OutlinedButton(
+                Spacer(modifier = Modifier.height(10.dp))
+                AppOutlinedButton(
                     modifier = Modifier.fillMaxWidth(0.9f),
                     onClick = onRestartGame,
-                ) {
-                    Text(text = "Restart")
-                }
+                    text = "Restart"
+                )
             }
         }
     }
