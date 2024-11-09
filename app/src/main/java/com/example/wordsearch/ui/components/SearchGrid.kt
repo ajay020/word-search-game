@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,6 +46,8 @@ import kotlin.math.sign
 fun SearchGrid(
     modifier: Modifier,
     viewModel: SearchGridViewModel = viewModel(factory = SearchGridViewModel.Factory),
+    resetTimer: () -> Unit,
+    navigateToMainScreen: () -> Unit,
 ) {
     val uiState = viewModel.uiState.value
 
@@ -78,8 +77,14 @@ fun SearchGrid(
 
         if (uiState.showCompletionDialog) {
             PuzzleCompletionDialog(
-                onDismiss = { viewModel.onDismissDialog() },
-                onNextPuzzle = { viewModel.loadNextPuzzle() },
+                onDismiss = {
+                    viewModel.onDismissDialog()
+                    navigateToMainScreen()
+                },
+                onNextPuzzle = {
+                    viewModel.loadNextPuzzle()
+                    resetTimer()
+                },
             )
         }
     }
@@ -294,29 +299,6 @@ fun MainContent(
             }
         }
     }
-}
-
-@Composable
-fun PuzzleCompletionDialog(
-    modifier: Modifier = Modifier,
-    onDismiss: () -> Unit,
-    onNextPuzzle: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Congratulations!") },
-        text = { Text("You've completed the puzzle!") },
-        confirmButton = {
-            Button(onClick = onNextPuzzle) {
-                Text("Next Puzzle")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismiss) {
-                Text("Close")
-            }
-        },
-    )
 }
 
 // Helper functions

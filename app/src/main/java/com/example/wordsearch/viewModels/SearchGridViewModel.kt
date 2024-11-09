@@ -70,13 +70,16 @@ class SearchGridViewModel(
         // Load the puzzles when the ViewModel is initialized
         viewModelScope.launch {
             puzzleRepository.loadPuzzles()
-            _uiState.value = _uiState.value.copy(totalLevels = puzzleRepository.getTotalPuzzles())
-            // Load the saved progress from SharedPreferences
-            _uiState.value = _uiState.value.copy(currentLevel = progressManager.getCurrentLevel())
+
+            // Load sound setting on initialization
+            _uiState.value =
+                _uiState.value.copy(
+                    totalLevels = puzzleRepository.getTotalPuzzles(),
+                    currentLevel = progressManager.getCurrentLevel(),
+                    isSoundEnabled = soundSettingsManager.isSoundEnabled(),
+                )
             loadPuzzle(_uiState.value.currentLevel)
         }
-        // Load sound setting on initialization
-        _uiState.value = _uiState.value.copy(isSoundEnabled = soundSettingsManager.isSoundEnabled())
     }
 
     override fun onCleared() {
@@ -97,31 +100,24 @@ class SearchGridViewModel(
         }
     }
 
-    fun toggleSound() {
-        val newSoundEnabled = !_uiState.value.isSoundEnabled
-        _uiState.value = _uiState.value.copy(isSoundEnabled = newSoundEnabled)
-        soundSettingsManager.saveSoundEnabled(newSoundEnabled) // Save the setting
-    }
-
-    private fun markPuzzleAsSolved() {
-        // Increment the level after solving and save the progress
+    fun loadNextPuzzle() {
+        _uiState.value = _uiState.value.copy(showCompletionDialog = false)
         val nextLevel = _uiState.value.currentLevel + 1
         _uiState.value = _uiState.value.copy(currentLevel = nextLevel)
-        progressManager.saveCurrentLevel(nextLevel)
-
         if (nextLevel < _uiState.value.totalLevels) {
             loadPuzzle(nextLevel)
         }
-    }
-
-    fun loadNextPuzzle() {
-        _uiState.value = _uiState.value.copy(showCompletionDialog = false)
-        markPuzzleAsSolved()
         resetPuzzleState()
     }
 
     private fun onPuzzleCompleted() {
         _uiState.value = _uiState.value.copy(showCompletionDialog = true, isPuzzleCompleted = true)
+        // Save the searched words count
+        val searchedWordsCount = _uiState.value.foundWords.size
+        progressManager.saveSearchedWordsCount(searchedWordsCount)
+        // Save the current level
+        val nextLevel = _uiState.value.currentLevel + 1
+        progressManager.saveCurrentLevel(nextLevel)
     }
 
     fun onDismissDialog() {
@@ -188,6 +184,12 @@ class SearchGridViewModel(
                 lastSoundPlayedTime = currentTime
             }
         }
+    }
+
+    fun toggleSound() {
+        val newSoundEnabled = !_uiState.value.isSoundEnabled
+        _uiState.value = _uiState.value.copy(isSoundEnabled = newSoundEnabled)
+        soundSettingsManager.saveSoundEnabled(newSoundEnabled) // Save the setting
     }
 
     private fun playWordMatchedSound() {
@@ -323,9 +325,6 @@ class SearchGridViewModel(
     private fun checkIfPuzzleCompleted() {
         if (_uiState.value.words.all { it.found }) {
             onPuzzleCompleted()
-            // Save the searched words count
-            val searchedWordsCount = _uiState.value.foundWords.size
-            progressManager.saveSearchedWordsCount(searchedWordsCount)
         }
     }
 
