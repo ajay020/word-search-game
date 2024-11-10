@@ -10,9 +10,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -35,6 +44,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.wordsearch.R
+import com.example.wordsearch.ui.components.CircularBtnBackground
 import com.example.wordsearch.ui.components.SearchGrid
 import com.example.wordsearch.ui.components.SearchGridTopbar
 import com.example.wordsearch.ui.components.TimerExpiredDialog
@@ -44,7 +55,6 @@ import java.util.Locale
 
 @Composable
 fun SearchGameScreen(
-    modifier: Modifier = Modifier,
     searchGameViewModel: SearchGameViewModal = viewModel(factory = SearchGameViewModal.FACTORY),
     searchGridViewModel: SearchGridViewModel = viewModel(factory = SearchGridViewModel.Factory),
     navigateToMainScreen: () -> Unit,
@@ -107,12 +117,12 @@ fun SearchGameScreen(
     Box(
         modifier = Modifier.fillMaxSize(),
     ) {
-        Image(
-            painter = painterResource(id = uiState.backgroundImgRes),
-            contentDescription = "Background",
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-        )
+//        Image(
+//            painter = painterResource(id = uiState.backgroundImgRes),
+//            contentDescription = "Background",
+//            modifier = Modifier.fillMaxSize(),
+//            contentScale = ContentScale.Crop,
+//        )
 
         // Handle back press
         BackHandler(
@@ -124,14 +134,14 @@ fun SearchGameScreen(
 
         Scaffold(
             modifier =
-                Modifier
-                    .background(Color.Transparent)
-                    .fillMaxSize(),
+            Modifier
+                .background(Color.Transparent)
+                .fillMaxSize(),
             containerColor = Color.Transparent,
             contentColor = Color.Transparent,
             topBar = {
                 SearchGridTopbar(
-                    title = wordTheme.value ?: "Word Search",
+                    remainingTime = remainingTime,
                     coins = uiState.coins,
                     onCloseClick = {
                         if (hasGameStarted) {
@@ -150,22 +160,20 @@ fun SearchGameScreen(
                 )
             },
         ) {
-            Column(
-                modifier =
-                    modifier
-                        .fillMaxSize()
-                        .padding(it),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                // Display timer
-                TimerText(remainingTime = remainingTime)
-                // Display the search grid
-                SearchGrid(
-                    modifier = Modifier,
-                    resetTimer = { searchGameViewModel.resetTimer() },
-                    navigateToMainScreen = { navigateToMainScreen() },
-                )
-            }
+            MainContent(
+                modifier = Modifier.padding(it),
+                resetTimer = {
+                    searchGameViewModel.resetTimer()
+                },
+                navigateToMainScreen = navigateToMainScreen,
+                onHintClick = {
+                    if (uiState.availableHints > 0) {
+                        searchGameViewModel.useHint()
+                        searchGridViewModel.highlightFirstCharacter()
+                    }
+                },
+                onSettingsClick = { showSettingsDialog = true },
+            )
 
             if (showTimerExpiredDialog) {
                 TimerExpiredDialog(
@@ -206,33 +214,67 @@ fun SearchGameScreen(
 }
 
 @Composable
-fun TimerText(
+fun MainContent(
     modifier: Modifier = Modifier,
-    remainingTime: Int,
+    navigateToMainScreen: () -> Unit,
+    resetTimer: () -> Unit,
+    onHintClick: () -> Unit,
+    onSettingsClick: () -> Unit
 ) {
-    Row(
+    Column(
         modifier =
-            Modifier
-                .padding(8.dp)
-                .background(Color.Gray.copy(alpha = 0.5f))
-                .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
+        modifier
+            .fillMaxSize()
+            .background(Color.LightGray),
+        verticalArrangement = Arrangement.Center,
     ) {
-        Text(
-            modifier = modifier.padding(8.dp),
-            text = "Time: " + formatTime(remainingTime),
-            fontSize = 24.sp,
-            color = Color.Black,
-            textAlign = TextAlign.Center,
+        SearchGrid(
+            modifier = Modifier,
+            resetTimer = { resetTimer() },
+            navigateToMainScreen = { navigateToMainScreen() },
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        PuzzleControl(
+            onHintClick = onHintClick,
+            onSettingsClick = onSettingsClick
         )
     }
 }
 
-// Helper function to format time
-fun formatTime(seconds: Int): String {
-    val minutes = seconds / 60
-    val remainingSeconds = seconds % 60
-    return String.format(Locale.getDefault(), "%02d:%02d", minutes, remainingSeconds)
+@Composable
+fun PuzzleControl(
+    modifier: Modifier = Modifier,
+    onHintClick: () -> Unit,
+    onSettingsClick: () -> Unit
+) {
+    Row (
+        modifier = modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        CircularBtnBackground(){
+            IconButton(onClick = onHintClick) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_lightbulb),
+                    contentDescription = "Light bulb",
+                    tint = Color.White,
+                    modifier = Modifier.size(36.dp),
+                )
+            }
+        }
+        Spacer(modifier = Modifier.width(20.dp))
+       CircularBtnBackground(){
+           IconButton(onClick = { onSettingsClick() }) {
+               Icon(
+                   Icons.Default.Settings,
+                   contentDescription = "Setting icon",
+                   tint = Color.White,
+                   modifier = Modifier.size(36.dp),
+               )
+           }
+       }
+    }
 }
 
 @Preview(
@@ -241,7 +283,8 @@ fun formatTime(seconds: Int): String {
 )
 @Composable
 private fun SearchGreenScreenPreview() {
-//    ExitConfirmationDialog(onQuit = { /*TODO*/ }) {}
 
-    TimerText(remainingTime = 120)
+   PuzzleControl(onHintClick = { /*TODO*/ }) {
+       
+    }
 }

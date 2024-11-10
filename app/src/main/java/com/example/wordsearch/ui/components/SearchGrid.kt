@@ -41,6 +41,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.wordsearch.viewModels.SearchGridState
 import com.example.wordsearch.viewModels.SearchGridViewModel
@@ -61,10 +62,9 @@ fun SearchGrid(
 
     Column(
         modifier =
-        modifier
-            .padding(4.dp)
-            .background(Color.Gray),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier
+                .padding(0.dp)
+                .background(Color.White),
     ) {
         MainContent(
             modifier = Modifier,
@@ -113,9 +113,9 @@ fun MainContent(
 ) {
     BoxWithConstraints(
         modifier =
-        modifier
-            .background(Color.White.copy(alpha = 0.5f))
-            .wrapContentSize(),
+            modifier
+                .wrapContentSize()
+                .background(Color.White.copy(alpha = 0.8f)),
         contentAlignment = Alignment.Center,
     ) {
         val density = LocalDensity.current
@@ -149,24 +149,22 @@ fun MainContent(
                     .width(with(density) { gridWidth.toDp() }),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, Color.Gray)
-                ,
+                modifier =
+                    Modifier
+                        .fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // Word list header
                 WordListHeader(
-                    theme = theme
+                    theme = theme,
                 )
                 // Word List
                 WordList(
                     modifier =
-                    Modifier
-                        .width(gridWidth.dp)
-                        .background(Color.Transparent),
+                        Modifier
+                            .width(gridWidth.dp)
+                            .background(Color.White.copy(alpha = 0.9f)),
                     words = uiState.words,
                 )
             }
@@ -175,7 +173,6 @@ fun MainContent(
             Box(
                 modifier =
                     Modifier
-                        .background(Color.White.copy(alpha = 0.5f))
                         .size(
                             with(density) {
                                 gridWidth.toDp()
@@ -337,19 +334,22 @@ fun getDirection(
     }
 }
 
-
 @Composable
-fun WordListHeader(modifier: Modifier = Modifier, theme: String?) {
+fun WordListHeader(
+    modifier: Modifier = Modifier,
+    theme: String?,
+) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Color.DarkGray),
-        horizontalArrangement = Arrangement.Center
+        modifier =
+            modifier
+                .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
     ) {
         Text(
             modifier = modifier.padding(6.dp),
-            text =  theme ?:  "Word Search",
-            color = Color.White
+            text = theme ?: "Word Search",
+            color = Color.Black,
+            fontSize = 14.sp
         )
     }
 }
@@ -406,6 +406,8 @@ private fun WordSearchPreview() {
         listOf(
             "ACT",
             "BAT",
+            "CAT",
+            "DOG",
             "CAT",
             "DOG",
         )
